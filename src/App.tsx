@@ -1,8 +1,12 @@
-import './App.css';
+import './index.css';
 import React from 'react';
+import debounce from 'lodash.debounce';
 
-const asciiChars = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'.';
-// const asciiChars = '+-`';
+// const asciiChars = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'.';
+// const asciiChars = '+-:`  ';
+const asciiChars = '#8?0/;.`';
+
+const artWidth = 2000;
 
 interface IResizeImageOptions {
     maxSize: number;
@@ -77,52 +81,118 @@ const getAscii = (canvas: HTMLCanvasElement): string => {
 };
 
 function App() {
-    const [selectedImage, setSelectedImage] = React.useState('');
-
     const [ascii, setAscii] = React.useState('');
+    const [currentFile, setCurrentFile] = React.useState<File>();
 
-    const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const myFile = event.target.files?.[0];
-        if (!myFile) {
-            return;
-        }
-
+    const [specs, setSpecs] = React.useState({ fontSize: 40, resolution: 50, letterSpacing: 1 });
+    const readFileAndSetAscii = (file: File, maxSize: number) => {
         resizeImage({
-            file: myFile,
-            maxSize: 300,
-        })
-            .then((canvas) => {
-                const a = getAscii(canvas);
-                setAscii(a);
-            })
-            .catch(function (err) {
-                return;
-            });
+            file: file,
+            maxSize: maxSize,
+        }).then((canvas) => {
+            const a = getAscii(canvas);
+            setAscii(a);
+        });
     };
+
+    const debouncedOnChangeRef = React.useRef<(file: File, resolution: number) => void>(
+        (file: File, resolution: number) => {
+            readFileAndSetAscii(file, resolution);
+        },
+    );
+
+    const debounceOnChange = React.useCallback(
+        debounce(
+            (file: File, resolution: number) => debouncedOnChangeRef.current(file, resolution),
+            1000,
+        ),
+        [],
+    );
+
     return (
-        <>
-            <div>
-                <input type="file" accept="image/*" onChange={onChange} />
+        <div className="flex-container">
+            <div className="menu">
+                <div>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            const myFile = event.target.files?.[0];
+                            if (!myFile) {
+                                return;
+                            }
+                            setCurrentFile(myFile);
+                            readFileAndSetAscii(myFile, specs.resolution);
+                        }}
+                    />
+                </div>
+                <div className="slidecontainer">
+                    <p>font size:</p>
+                    <input
+                        type="range"
+                        min="1"
+                        max="20"
+                        className="slider"
+                        id="fontSize"
+                        onChange={(event) => {
+                            const fontSize = parseFloat(event.target.value);
+
+                            setSpecs({ ...specs, fontSize: fontSize });
+                        }}
+                    />
+                    <output>{specs.fontSize.toString().slice(0, 5)}</output>
+                </div>
+
+                <div className="slidecontainer">
+                    <p>spacing between letters:</p>
+                    <input
+                        type="range"
+                        min="1"
+                        max="20"
+                        className="slider"
+                        id="letterSpacing"
+                        onChange={(event) => {
+                            setSpecs({ ...specs, letterSpacing: parseFloat(event.target.value) });
+                        }}
+                    />
+                    <output>{specs.letterSpacing.toString().slice(0, 5)}</output>
+                </div>
+
+                <div className="slidecontainer">
+                    <p>resolution:</p>
+                    <input
+                        type="range"
+                        min="50"
+                        max="500"
+                        className="slider"
+                        id="resolution"
+                        onChange={(event) => {
+                            const r = parseFloat(event.target.value);
+                            const f = Math.floor(artWidth / r);
+                            const s = artWidth / (r * f);
+
+                            setSpecs({ resolution: r, fontSize: f, letterSpacing: s });
+
+                            if (currentFile) {
+                                debounceOnChange(currentFile, r);
+                            }
+                        }}
+                    />
+                    <output>{specs.resolution.toString().slice(0, 5)}</output>
+                </div>
             </div>
-            <div>
-                {selectedImage !== '' && (
-                    <div>
-                        <h3>{`current image src: ${selectedImage}`}</h3>
-                        <br />
-                    </div>
-                )}
-                <br />
+
+            <pre>
                 <h1
                     style={{
-                        fontSize: '4px',
-                        fontFamily: 'courier new',
+                        fontSize: `${specs.fontSize}px`,
+                        fontFamily: 'courier',
                         color: 'black',
-                        whiteSpace: 'pre-line',
-                        lineHeight: '1',
-                        letterSpacing: '1px',
+                        lineHeight: '0.5',
+                        letterSpacing: specs.letterSpacing,
                     }}>{`${ascii}`}</h1>
-            </div>
-        </>
+            </pre>
+        </div>
     );
 }
 
