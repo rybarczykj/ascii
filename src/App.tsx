@@ -1,112 +1,54 @@
 import './index.css';
 import React from 'react';
 import debounce from 'lodash.debounce';
+import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
+import { Slider } from './Slider';
 
-// const asciiChars = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'.';
-// const asciiChars = '+-:`  ';
-const asciiChars = '#8?0/;.`';
+const ARTWIDTH = 700;
 
-const artWidth = 2000;
-
-interface IResizeImageOptions {
-    maxSize: number;
-    file: File;
+interface SpecsState {
+    fontSize: number;
+    resolution: number;
+    letterSpacing: number;
+    width: number;
+    zoom: number;
 }
-const resizeImage = (settings: IResizeImageOptions) => {
-    const file = settings.file;
-    const maxSize = settings.maxSize;
-    const reader = new FileReader();
-    const image = new Image();
-    const canvas = document.createElement('canvas');
 
-    const resize = () => {
-        let width = image.width;
-        let height = image.height;
-
-        if (width > height) {
-            if (width > maxSize) {
-                height *= maxSize / width;
-                width = maxSize;
-            }
-        } else {
-            if (height > maxSize) {
-                width *= maxSize / height;
-                height = maxSize;
-            }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext('2d');
-        context?.drawImage(image, 0, 0, width, height);
-        return canvas;
-    };
-
-    return new Promise<HTMLCanvasElement>((ok, no) => {
-        if (!file.type.match(/image.*/)) {
-            no(new Error('Not an image'));
-            return;
-        }
-
-        reader.onload = (readerEvent: any) => {
-            image.onload = () => ok(resize());
-            image.src = readerEvent.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-};
-
-const getAscii = (canvas: HTMLCanvasElement): string => {
-    const context = canvas.getContext('2d');
-    const data = context?.getImageData(0, 0, canvas.width, canvas.height);
-
-    if (!data) {
-        return '';
-    }
-
-    const pixels = data.data;
-
-    let ascii = '';
-    for (let y = 0; y < data.height; y++) {
-        for (let x = 0; x < data.width; x++) {
-            const pixelIndex = (y * data.width + x) * 4;
-            const luminance =
-                (pixels[pixelIndex] + pixels[pixelIndex + 1] + pixels[pixelIndex + 2]) / 3;
-            const asciiIndex = Math.floor((luminance / 255) * (asciiChars.length - 1));
-            ascii += asciiChars[asciiIndex];
-        }
-        ascii += '\n';
-    }
-    return ascii;
+const initialState = {
+    fontSize: 30,
+    resolution: 100,
+    letterSpacing: 0,
+    width: ARTWIDTH,
+    zoom: 1,
 };
 
 function App() {
     const [ascii, setAscii] = React.useState('');
     const [currentFile, setCurrentFile] = React.useState<File>();
+    const [specs, setSpecs] = React.useState<SpecsState>(initialState);
+    const [zoom, setZoom] = React.useState(1);
 
-    const [specs, setSpecs] = React.useState({ fontSize: 40, resolution: 50, letterSpacing: 1 });
-    const readFileAndSetAscii = (file: File, maxSize: number) => {
+    // I use to need to make this fun a ref but i'm not so sure anymore
+    const onResolutionChange = (imageFile: File, newResolution: number) => {
         resizeImage({
-            file: file,
-            maxSize: maxSize,
+            file: imageFile,
+            maxSize: newResolution,
         }).then((canvas) => {
-            const a = getAscii(canvas);
-            setAscii(a);
+            const newAscii = getAsciiFromCanvas(canvas);
+            const newFontSize = specs.width / newResolution;
+
+            setSpecs({
+                ...specs,
+                fontSize: newFontSize,
+                resolution: newResolution,
+            });
+            setAscii(newAscii);
         });
     };
 
-    const debouncedOnChangeRef = React.useRef<(file: File, resolution: number) => void>(
-        (file: File, resolution: number) => {
-            readFileAndSetAscii(file, resolution);
-        },
-    );
-
-    const debounceOnChange = React.useCallback(
-        debounce(
-            (file: File, resolution: number) => debouncedOnChangeRef.current(file, resolution),
-            1000,
-        ),
-        [],
+    const debounceOnresolutionChange = debounce(
+        (file: File, spec) => onResolutionChange(file, spec),
+        0,
     );
 
     return (
@@ -122,75 +64,70 @@ function App() {
                                 return;
                             }
                             setCurrentFile(myFile);
-                            readFileAndSetAscii(myFile, specs.resolution);
+                            debounceOnresolutionChange(myFile, initialState.resolution);
                         }}
                     />
                 </div>
-                <div className="slidecontainer">
-                    <p>font size:</p>
-                    <input
-                        type="range"
-                        min="1"
-                        max="20"
-                        className="slider"
-                        id="fontSize"
-                        onChange={(event) => {
-                            const fontSize = parseFloat(event.target.value);
+                <Slider
+                    title={'zoom:'}
+                    onChange={(event) => {
+                        const newZoom = parseFloat(event.target.value);
+                        setSpecs({ ...specs, zoom: newZoom });
+                    }}
+                    value={specs.zoom}
+                    min={1}
+                    max={10}
+                    step={0.25}
+                    label={specs.fontSize.toString().slice(0, 5)}
+                />
+                <Slider
+                    title={'spacing between letters:'}
+                    onChange={(event) => {
+                        const letterSpacing = parseFloat(event.target.value);
+                        setSpecs({ ...specs, letterSpacing: letterSpacing });
+                    }}
+                    value={specs.letterSpacing}
+                    min={0}
+                    max={4}
+                    step={0.25}
+                    label={specs.letterSpacing.toString().slice(0, 5)}
+                />
+                <Slider
+                    title={'characters wide:'}
+                    onChange={(event) => {
+                        const resolution = parseFloat(event.target.value);
+                        if (currentFile) {
+                            debounceOnresolutionChange(currentFile, resolution);
+                        }
+                    }}
+                    value={specs.resolution}
+                    min={5}
+                    max={500}
+                    label={specs.resolution.toString().slice(0, 5)}
+                />
 
-                            setSpecs({ ...specs, fontSize: fontSize });
-                        }}
-                    />
-                    <output>{specs.fontSize.toString().slice(0, 5)}</output>
-                </div>
-
-                <div className="slidecontainer">
-                    <p>spacing between letters:</p>
-                    <input
-                        type="range"
-                        min="1"
-                        max="20"
-                        className="slider"
-                        id="letterSpacing"
-                        onChange={(event) => {
-                            setSpecs({ ...specs, letterSpacing: parseFloat(event.target.value) });
-                        }}
-                    />
-                    <output>{specs.letterSpacing.toString().slice(0, 5)}</output>
-                </div>
-
-                <div className="slidecontainer">
-                    <p>resolution:</p>
-                    <input
-                        type="range"
-                        min="50"
-                        max="500"
-                        className="slider"
-                        id="resolution"
-                        onChange={(event) => {
-                            const r = parseFloat(event.target.value);
-                            const f = Math.floor(artWidth / r);
-                            const s = artWidth / (r * f);
-
-                            setSpecs({ resolution: r, fontSize: f, letterSpacing: s });
-
-                            if (currentFile) {
-                                debounceOnChange(currentFile, r);
-                            }
-                        }}
-                    />
-                    <output>{specs.resolution.toString().slice(0, 5)}</output>
+                <div style={{ padding: '20px' }}>
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(ascii);
+                        }}>
+                        {'save to clipboard'}
+                    </button>
                 </div>
             </div>
-
             <pre>
-                <h1
+                <div
+                    className="ascii"
                     style={{
-                        fontSize: `${specs.fontSize}px`,
-                        fontFamily: 'courier',
-                        color: 'black',
-                        lineHeight: '0.5',
+                        fontSize: `${specs.zoom * specs.fontSize}px`,
+                        lineHeight: 1,
                         letterSpacing: specs.letterSpacing,
-                    }}>{`${ascii}`}</h1>
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: -1,
+                    }}>{`${ascii}`}</div>
             </pre>
         </div>
     );
