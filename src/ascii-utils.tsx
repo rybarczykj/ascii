@@ -1,13 +1,18 @@
-const asciiChars = '+::`..';
-// const asciiChars =
-//     '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.';
+// const asciiChars = '+::`..';
+const asciiChars =
+    '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.';
 
 // const asciiChars = '▓▒▒░░';
 // const asciiChars = ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '];
 
 // const asciiChars = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'.';
 // const asciiChars = '+-:`  ';
-// const asciiChars = '#8?0+:.';
+['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '];
+
+// const asciiChars = '8M0|*|::`,.';
+
+// const asciiChars = '8M0#$|*|::`,.';
+// const asciiChars = '#8?0+:.,';
 // const asciiChars = '8#|:.';
 
 export const getAsciiFromCanvas = (canvas: HTMLCanvasElement): string => {
@@ -35,12 +40,12 @@ export const getAsciiFromCanvas = (canvas: HTMLCanvasElement): string => {
 };
 
 interface IResizeImageOptions {
-    maxSize: number;
+    maxWidth: number;
     file: File;
 }
 export const resizeImage = (settings: IResizeImageOptions) => {
     const file = settings.file;
-    const maxSize = settings.maxSize;
+    const maxWidth = settings.maxWidth;
     const reader = new FileReader();
     const image = new Image();
     const canvas = document.createElement('canvas');
@@ -49,17 +54,22 @@ export const resizeImage = (settings: IResizeImageOptions) => {
         let width = image.width;
         let height = image.height;
 
-        if (width > height) {
-            if (width > maxSize) {
-                height *= maxSize / width;
-                width = maxSize;
-            }
-        } else {
-            if (height > maxSize) {
-                width *= maxSize / height;
-                height = maxSize;
-            }
+        // if (width > height) {
+        //     if (width > maxWidth) {
+        //         height *= maxWidth / width;
+        //         width = maxWidth;
+        //     }
+        // } else {
+        //     if (height > maxWidth) {
+        //         width *= maxWidth / height;
+        //         height = maxWidth;
+        //     }
+        // }
+        if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
         }
+        height *= 0.6;
 
         canvas.width = width;
         canvas.height = height;
