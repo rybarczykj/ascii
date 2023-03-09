@@ -21,7 +21,9 @@
         "start": "react-scripts start",
         "build": "react-scripts build",
         "test": "react-scripts test",
-        "eject": "react-scripts eject"
+        "eject": "react-scripts eject",
+        "predeploy": "npm run build",
+        "deploy": "gh-pages -d build"
     },
     "eslintConfig": {
         "extends": [
@@ -44,6 +46,7 @@
     "devDependencies": {
         "@types/lodash": "^4.14.191",
         "@types/lodash.debounce": "^4.0.7",
+        "gh-pages": "^5.0.0",
         "prettier": "^2.8.1"
     },
     "lint": "eslint .",
@@ -54,5 +57,6 @@
     "@babel/compat-data": "7.19.4",
     "@babel/helper-compilation-targets": "7.19.3",
     "@babel/helper-create-class-features-plugin": "7.19.0",
-    "@babel/helper-module-transforms": "7.19.6"
+    "@babel/helper-module-transforms": "7.19.6",
+    "homepage": "https://rybarczykj.github.io/ascii"
 }

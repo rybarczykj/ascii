@@ -1,6 +1,6 @@
 // const asciiChars = '+::`..';
-const asciiChars =
-    '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.';
+// const asciiChars =
+//     '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.';
 
 // const asciiChars = '▓▒▒░░';
 // const asciiChars = ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '];
@@ -9,7 +9,7 @@ const asciiChars =
 // const asciiChars = '+-:`  ';
 ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '];
 
-// const asciiChars = '8M0|*|::`,.';
+const asciiChars = '8M0|*|::`,.';
 
 // const asciiChars = '8M0#$|*|::`,.';
 // const asciiChars = '#8?0+:.,';
@@ -43,7 +43,7 @@ interface IResizeImageOptions {
     maxWidth: number;
     file: File;
 }
-export const resizeImage = (settings: IResizeImageOptions) => {
+export const resizeImage = (settings: IResizeImageOptions): Promise<HTMLCanvasElement> => {
     const file = settings.file;
     const maxWidth = settings.maxWidth;
     const reader = new FileReader();
@@ -54,17 +54,6 @@ export const resizeImage = (settings: IResizeImageOptions) => {
         let width = image.width;
         let height = image.height;
 
-        // if (width > height) {
-        //     if (width > maxWidth) {
-        //         height *= maxWidth / width;
-        //         width = maxWidth;
-        //     }
-        // } else {
-        //     if (height > maxWidth) {
-        //         width *= maxWidth / height;
-        //         height = maxWidth;
-        //     }
-        // }
         if (width > maxWidth) {
             height *= maxWidth / width;
             width = maxWidth;

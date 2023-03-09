@@ -4,6 +4,7 @@ interface SliderProps {
     title: string;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     label: string;
+    // eslint-disable-next-line
     value: any;
     min: number;
     max: number;

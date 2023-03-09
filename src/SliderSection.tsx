@@ -2,7 +2,9 @@ import { Slider } from './Slider';
 import React from 'react';
 
 export const SliderSection: React.FC<{
+    // eslint-disable-next-line
     specs: any;
+    // eslint-disable-next-line
     setSpecs: (state: any) => void;
     onResolutionChange: (newResolution: number) => void;
 }> = ({ specs, setSpecs, onResolutionChange }) => {

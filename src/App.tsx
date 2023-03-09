@@ -2,7 +2,6 @@ import './index.css';
 import React from 'react';
 import debounce from 'lodash.debounce';
 import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
-import { Slider } from './Slider';
 import { SliderSection } from './SliderSection';
 
 const ARTWIDTH = 700;
@@ -21,7 +20,7 @@ const initialState = {
     zoom: 1,
 };
 
-function App() {
+const App: React.FC = () => {
     const [ascii, setAscii] = React.useState('');
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [specs, setSpecs] = React.useState<SpecsState>(initialState);
@@ -55,8 +54,12 @@ function App() {
     return (
         <div className="flex-container">
             <div className="menu">
-                <div>
+                <div className="menu-entry">
+                    <label htmlFor="file-upload" className="clickable-button">
+                        Upload an image
+                    </label>
                     <input
+                        id="file-upload"
                         type="file"
                         accept="image/*"
                         onChange={(event) => {
@@ -80,8 +83,14 @@ function App() {
                     }}
                 />
 
-                <div style={{ padding: '20px' }}>
+                <div className="menu-entry">
+                    <label htmlFor="clipboard-button" className="clickable-button">
+                        Save to clipboard
+                    </label>
+
                     <button
+                        id="clipboard-button"
+                        className="hidden-button"
                         onClick={() => {
                             navigator.clipboard.writeText(ascii);
                         }}>
@@ -99,6 +108,6 @@ function App() {
             </pre>
         </div>
     );
-}
+};
 
 export default App;

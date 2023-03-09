@@ -9,15 +9,54 @@ body {
         'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     /* -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale; */
+    background-color: #bfbfbf;
 }
 
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-/* .slidecontainer {
-    width: 100%;
-} */
+.menu {
+    margin: 10px;
+    font-family: 'IBM Plex Mono';
+    color: 'black';
+    width: 200px;
+    font-size: 12px;
+    text-align: center;
+    border: 1px solid black;
+}
+
+.menu-entry {
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+input[type='file'] {
+    position: absolute;
+    left: -99999rem;
+}
+
+input[type='button'] {
+    position: absolute;
+    left: -99999rem;
+}
+
+.clickable-button {
+    border: 1px solid black;
+    padding: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer;
+}
+
+.clickable-button:hover {
+    background-color: lightgrey;
+}
+
+.hidden-button {
+    position: absolute;
+    left: -99999rem;
+}
 
 .flex-container {
     display: flex;
