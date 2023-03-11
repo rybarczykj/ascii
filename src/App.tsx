@@ -1,12 +1,13 @@
 import './index.css';
 import React from 'react';
 import debounce from 'lodash.debounce';
-import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
+import { resizeImage, getAsciiFromCanvas, ASCIICHARS } from './ascii-utils';
 import { SliderSection } from './SliderSection';
+import DropdownMenu from './Dropdown';
 
 const ARTWIDTH = 700;
 
-interface SpecsState {
+export interface SpecsState {
     fontSize: number;
     resolution: number;
     width: number;
@@ -25,16 +26,14 @@ const App: React.FC = () => {
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [specs, setSpecs] = React.useState<SpecsState>(initialState);
 
-    const onResolutionChange = (imageFile: File, newResolution: number) => {
-        if (!imageFile) {
-            return;
-        }
+    const [palette, setPalette] = React.useState<string>(ASCIICHARS[0]);
 
+    const onResolutionChange = (imageFile: File, newResolution: number) => {
         resizeImage({
             file: imageFile,
             maxWidth: newResolution,
         }).then((canvas) => {
-            const newAscii = getAsciiFromCanvas(canvas);
+            const newAscii = getAsciiFromCanvas(canvas, palette);
             const newFontSize = specs.width / newResolution;
 
             setSpecs({
@@ -47,7 +46,7 @@ const App: React.FC = () => {
     };
 
     const debounceOnresolutionChange = debounce(
-        (file: File, spec) => onResolutionChange(file, spec),
+        (file: File, resolution) => onResolutionChange(file, resolution),
         0,
     );
 
@@ -74,7 +73,9 @@ const App: React.FC = () => {
                 </div>
                 <SliderSection
                     specs={specs}
-                    setSpecs={setSpecs}
+                    onSpecsChange={(specs) => {
+                        setSpecs(specs);
+                    }}
                     onResolutionChange={(resolution) => {
                         if (!currentFile) {
                             return;
@@ -82,7 +83,16 @@ const App: React.FC = () => {
                         debounceOnresolutionChange(currentFile, resolution);
                     }}
                 />
-
+                {/* <DropdownMenu
+                    selectedOption={palette}
+                    onOptionChange={(option) => {
+                        if (!currentFile) {
+                            return;
+                        }
+                        setPalette(option);
+                        debounceOnresolutionChange(currentFile, resolution);
+                    }}
+                /> */}
                 <div className="menu-entry">
                     <label htmlFor="clipboard-button" className="clickable-button">
                         Save to clipboard

@@ -1,20 +1,20 @@
 import { Slider } from './Slider';
 import React from 'react';
+import { SpecsState } from './App';
 
 export const SliderSection: React.FC<{
     // eslint-disable-next-line
     specs: any;
-    // eslint-disable-next-line
-    setSpecs: (state: any) => void;
-    onResolutionChange: (newResolution: number) => void;
-}> = ({ specs, setSpecs, onResolutionChange }) => {
+    onSpecsChange: (specs: SpecsState) => void;
+    onResolutionChange: (resolution: number) => void;
+}> = ({ specs, onSpecsChange, onResolutionChange }) => {
     return (
         <>
             <Slider
                 title={'zoom:'}
                 onChange={(event) => {
                     const newZoom = parseFloat(event.target.value);
-                    setSpecs({ ...specs, zoom: newZoom });
+                    onSpecsChange({ ...specs, zoom: newZoom });
                 }}
                 value={specs.zoom}
                 min={1}
