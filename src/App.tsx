@@ -3,7 +3,7 @@ import React from 'react';
 import debounce from 'lodash.debounce';
 import { resizeImage, getAsciiFromCanvas, ASCIICHARS } from './ascii-utils';
 import { SliderSection } from './SliderSection';
-import DropdownMenu from './Dropdown';
+import PaletteDropdown from './Dropdown';
 
 const ARTWIDTH = 700;
 
@@ -83,7 +83,7 @@ const App: React.FC = () => {
                         debounceOnresolutionChange(currentFile, resolution, palette);
                     }}
                 />
-                <DropdownMenu
+                <PaletteDropdown
                     selectedOption={palette}
                     onOptionChange={(option) => {
                         if (!currentFile) {
@@ -93,6 +93,7 @@ const App: React.FC = () => {
                         setPalette(option);
                     }}
                 />
+
                 <div className="menu-entry">
                     <label htmlFor="clipboard-button" className="clickable-button">
                         Save to clipboard

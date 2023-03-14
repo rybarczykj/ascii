@@ -22,7 +22,11 @@ export const ASCIICHARS = [
 // const asciiChars = '#8?0+:.,';
 // const asciiChars = '8#|:.';
 
-export const getAsciiFromCanvas = (canvas: HTMLCanvasElement, asciiChars: string): string => {
+export const getAsciiFromCanvas = (
+    canvas: HTMLCanvasElement,
+    asciiChars: string,
+    inverse = true,
+): string => {
     const context = canvas.getContext('2d');
     const data = context?.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -39,7 +43,11 @@ export const getAsciiFromCanvas = (canvas: HTMLCanvasElement, asciiChars: string
             const luminance =
                 (pixels[pixelIndex] + pixels[pixelIndex + 1] + pixels[pixelIndex + 2]) / 3;
             const asciiIndex = Math.floor((luminance / 255) * (asciiChars.length - 1));
-            ascii += asciiChars[asciiIndex];
+            if (inverse) {
+                ascii += asciiChars[asciiChars.length - asciiIndex - 1];
+            } else {
+                ascii += asciiChars[asciiIndex];
+            }
         }
         ascii += '\n';
     }

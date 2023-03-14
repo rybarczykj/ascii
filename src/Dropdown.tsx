@@ -9,12 +9,12 @@ export const ASCIICHARS = [
     '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
 ];
 
-interface DropdownMenuProps {
+interface PaletteDropdownProps {
     selectedOption: string;
     onOptionChange: (option: string) => void;
 }
 
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ selectedOption, onOptionChange }) => {
+const PaletteDropdown: React.FC<PaletteDropdownProps> = ({ selectedOption, onOptionChange }) => {
     const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newOption = event.target.value;
         onOptionChange(newOption);
@@ -39,4 +39,4 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ selectedOption, onOptionCha
     );
 };
 
-export default DropdownMenu;
+export default PaletteDropdown;
