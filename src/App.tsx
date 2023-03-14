@@ -28,12 +28,19 @@ const App: React.FC = () => {
 
     const [palette, setPalette] = React.useState<string>(ASCIICHARS[0]);
 
-    const onResolutionChange = (imageFile: File, newResolution: number, palette: string) => {
+    const [invert, setInvert] = React.useState(false);
+
+    const onResolutionChange = (
+        imageFile: File,
+        newResolution: number,
+        palette: string,
+        invert: boolean,
+    ) => {
         resizeImage({
             file: imageFile,
             maxWidth: newResolution,
         }).then((canvas) => {
-            const newAscii = getAsciiFromCanvas(canvas, palette);
+            const newAscii = getAsciiFromCanvas(canvas, palette, invert);
             const newFontSize = specs.width / newResolution;
 
             setSpecs({
@@ -46,7 +53,8 @@ const App: React.FC = () => {
     };
 
     const debounceOnresolutionChange = debounce(
-        (file: File, resolution, palette) => onResolutionChange(file, resolution, palette),
+        (file: File, resolution, palette, invert) =>
+            onResolutionChange(file, resolution, palette, invert),
         0,
     );
 
@@ -67,7 +75,12 @@ const App: React.FC = () => {
                                 return;
                             }
                             setCurrentFile(myFile);
-                            debounceOnresolutionChange(myFile, initialState.resolution, palette);
+                            debounceOnresolutionChange(
+                                myFile,
+                                initialState.resolution,
+                                palette,
+                                invert,
+                            );
                         }}
                     />
                 </div>
@@ -80,7 +93,7 @@ const App: React.FC = () => {
                         if (!currentFile) {
                             return;
                         }
-                        debounceOnresolutionChange(currentFile, resolution, palette);
+                        debounceOnresolutionChange(currentFile, resolution, palette, invert);
                     }}
                 />
                 <PaletteDropdown
@@ -89,10 +102,34 @@ const App: React.FC = () => {
                         if (!currentFile) {
                             return;
                         }
-                        debounceOnresolutionChange(currentFile, specs.resolution, option);
+                        debounceOnresolutionChange(currentFile, specs.resolution, option, invert);
                         setPalette(option);
                     }}
                 />
+
+                <form>
+                    <div className="checkboxes">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={invert}
+                                onChange={() => {
+                                    if (!currentFile) {
+                                        return;
+                                    }
+                                    debounceOnresolutionChange(
+                                        currentFile,
+                                        specs.resolution,
+                                        palette,
+                                        !invert,
+                                    );
+                                    setInvert(!invert);
+                                }}
+                            />
+                            {'inverse?'}
+                        </label>
+                    </div>
+                </form>
 
                 <div className="menu-entry">
                     <label htmlFor="clipboard-button" className="clickable-button">

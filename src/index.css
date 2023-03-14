@@ -78,3 +78,18 @@ input[type='button'] {
     width: 150px;
     margin: 10px;
 }
+
+.checkboxes label {
+    display: block;
+    text-indent: -15px;
+}
+
+.checkboxes input {
+    width: 25px;
+    height: 15px;
+    padding: 0;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+    top: -1px;
+}

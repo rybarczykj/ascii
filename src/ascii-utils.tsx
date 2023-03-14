@@ -25,7 +25,7 @@ export const ASCIICHARS = [
 export const getAsciiFromCanvas = (
     canvas: HTMLCanvasElement,
     asciiChars: string,
-    inverse = true,
+    inverse = false,
 ): string => {
     const context = canvas.getContext('2d');
     const data = context?.getImageData(0, 0, canvas.width, canvas.height);
