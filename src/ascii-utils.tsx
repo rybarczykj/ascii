@@ -27,6 +27,7 @@ export const getAsciiFromCanvas = (
     asciiChars: string,
     inverse = false,
 ): string => {
+    console.log(ASCIICHARS.indexOf(asciiChars));
     const context = canvas.getContext('2d');
     const data = context?.getImageData(0, 0, canvas.width, canvas.height);
 
