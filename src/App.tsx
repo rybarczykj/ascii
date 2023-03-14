@@ -12,6 +12,7 @@ export interface SpecsState {
     resolution: number;
     width: number;
     zoom: number;
+    weight: number;
 }
 
 const initialState = {
@@ -19,6 +20,7 @@ const initialState = {
     resolution: 100,
     width: ARTWIDTH,
     zoom: 1,
+    weight: 400,
 };
 
 const App: React.FC = () => {
@@ -152,6 +154,7 @@ const App: React.FC = () => {
                     style={{
                         fontSize: `${specs.zoom * specs.fontSize}px`,
                         lineHeight: 1,
+                        fontWeight: specs.weight,
                     }}>{`${ascii}`}</div>
             </pre>
         </div>

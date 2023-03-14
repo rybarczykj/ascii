@@ -3,8 +3,7 @@ import React from 'react';
 import { SpecsState } from './App';
 
 export const SliderSection: React.FC<{
-    // eslint-disable-next-line
-    specs: any;
+    specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
     onResolutionChange: (resolution: number) => void;
 }> = ({ specs, onSpecsChange, onResolutionChange }) => {
@@ -24,7 +23,7 @@ export const SliderSection: React.FC<{
             />
 
             <Slider
-                title={'characters wide:'}
+                title={'resolution:'}
                 onChange={(event) => {
                     const resolution = parseFloat(event.target.value);
                     onResolutionChange(resolution);
@@ -33,6 +32,18 @@ export const SliderSection: React.FC<{
                 min={5}
                 max={500}
                 label={specs.resolution.toString().slice(0, 5)}
+            />
+
+            <Slider
+                title={'weight:'}
+                onChange={(event) => {
+                    const newWeight = parseFloat(event.target.value);
+                    onSpecsChange({ ...specs, weight: newWeight });
+                }}
+                value={specs.weight}
+                min={0}
+                max={800}
+                label={specs.weight.toString()}
             />
         </>
     );
