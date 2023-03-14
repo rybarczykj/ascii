@@ -9,14 +9,14 @@
 // const asciiChars = '+-:`  ';
 ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '];
 
-export const ASCIICHARS = [
-    '8M0|*|::`,.',
-    '+::`..',
-    '+-:`  ',
-    '▓▒▒░░',
-    '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'.',
-    '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
-];
+// export const ASCIICHARS = [
+//     '8M0|*|::`,.',
+//     '+::`..',
+//     '+-:`  ',
+//     '▓▒▒░░',
+//     '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,"^`\'.',
+//     '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
+// ];
 
 // const asciiChars = '8M0#$|*|::`,.';
 // const asciiChars = '#8?0+:.,';
@@ -27,7 +27,6 @@ export const getAsciiFromCanvas = (
     asciiChars: string,
     inverse = false,
 ): string => {
-    console.log(ASCIICHARS.indexOf(asciiChars));
     const context = canvas.getContext('2d');
     const data = context?.getImageData(0, 0, canvas.width, canvas.height);
 

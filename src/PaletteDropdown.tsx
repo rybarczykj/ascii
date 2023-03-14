@@ -1,17 +1,19 @@
 import React from 'react';
 
 export const ASCIICHARS = [
+    '8M0|*|::`,.',
     'M80*|:,.` ',
     '$H2a?+.   ',
     '8+::`..',
     '+-:`  ',
-    '▓▒▒░░',
+    '▓▒▒░░ ',
     '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
+    ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '],
 ];
 
 interface PaletteDropdownProps {
-    selectedOption: string;
-    onOptionChange: (option: string) => void;
+    selectedOption: string | string[];
+    onOptionChange: (option: string | string[]) => void;
 }
 
 const PaletteDropdown: React.FC<PaletteDropdownProps> = ({ selectedOption, onOptionChange }) => {

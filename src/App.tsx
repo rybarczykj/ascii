@@ -1,9 +1,9 @@
 import './index.css';
 import React from 'react';
 import debounce from 'lodash.debounce';
-import { resizeImage, getAsciiFromCanvas, ASCIICHARS } from './ascii-utils';
+import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
 import { SliderSection } from './SliderSection';
-import PaletteDropdown from './Dropdown';
+import PaletteDropdown, { ASCIICHARS } from './PaletteDropdown';
 
 const ARTWIDTH = 700;
 
@@ -26,7 +26,7 @@ const App: React.FC = () => {
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [specs, setSpecs] = React.useState<SpecsState>(initialState);
 
-    const [palette, setPalette] = React.useState<string>(ASCIICHARS[0]);
+    const [palette, setPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
 
     const [invert, setInvert] = React.useState(false);
 
