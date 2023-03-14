@@ -9,7 +9,7 @@ body {
         'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     /* -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale; */
-    background-color: #bfbfbf;
+    background-color: rgb(210, 210, 210);
 }
 
 code {
@@ -72,4 +72,9 @@ input[type='button'] {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: -1;
+}
+
+.dropdown {
+    width: 150px;
+    margin: 10px;
 }

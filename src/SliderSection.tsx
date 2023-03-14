@@ -20,7 +20,7 @@ export const SliderSection: React.FC<{
                 min={1}
                 max={10}
                 step={0.25}
-                label={specs.fontSize.toString().slice(0, 5)}
+                label={specs.fontSize.toString().slice(0, 4)}
             />
 
             <Slider

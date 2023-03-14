@@ -28,7 +28,7 @@ const App: React.FC = () => {
 
     const [palette, setPalette] = React.useState<string>(ASCIICHARS[0]);
 
-    const onResolutionChange = (imageFile: File, newResolution: number) => {
+    const onResolutionChange = (imageFile: File, newResolution: number, palette: string) => {
         resizeImage({
             file: imageFile,
             maxWidth: newResolution,
@@ -46,7 +46,7 @@ const App: React.FC = () => {
     };
 
     const debounceOnresolutionChange = debounce(
-        (file: File, resolution) => onResolutionChange(file, resolution),
+        (file: File, resolution, palette) => onResolutionChange(file, resolution, palette),
         0,
     );
 
@@ -67,7 +67,7 @@ const App: React.FC = () => {
                                 return;
                             }
                             setCurrentFile(myFile);
-                            debounceOnresolutionChange(myFile, initialState.resolution);
+                            debounceOnresolutionChange(myFile, initialState.resolution, palette);
                         }}
                     />
                 </div>
@@ -80,19 +80,19 @@ const App: React.FC = () => {
                         if (!currentFile) {
                             return;
                         }
-                        debounceOnresolutionChange(currentFile, resolution);
+                        debounceOnresolutionChange(currentFile, resolution, palette);
                     }}
                 />
-                {/* <DropdownMenu
+                <DropdownMenu
                     selectedOption={palette}
                     onOptionChange={(option) => {
                         if (!currentFile) {
                             return;
                         }
+                        debounceOnresolutionChange(currentFile, specs.resolution, option);
                         setPalette(option);
-                        debounceOnresolutionChange(currentFile, resolution);
                     }}
-                /> */}
+                />
                 <div className="menu-entry">
                     <label htmlFor="clipboard-button" className="clickable-button">
                         Save to clipboard
