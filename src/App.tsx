@@ -2,9 +2,8 @@ import './index.css';
 import React from 'react';
 import debounce from 'lodash.debounce';
 import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
-import { SliderSection } from './SliderSection';
-import PaletteDropdown, { ASCIICHARS } from './PaletteDropdown';
-
+import { ASCIICHARS } from './PaletteDropdown';
+import { Menu } from './Menu';
 const ARTWIDTH = 700;
 
 export interface SpecsState {
@@ -30,19 +29,19 @@ const App: React.FC = () => {
 
     const [palette, setPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
 
-    const [invert, setInvert] = React.useState(false);
+    const [isColorInverted, setInvert] = React.useState(false);
 
     const onResolutionChange = (
         imageFile: File,
         newResolution: number,
         palette: string,
-        invert: boolean,
+        isColorInverted: boolean,
     ) => {
         resizeImage({
             file: imageFile,
             maxWidth: newResolution,
         }).then((canvas) => {
-            const newAscii = getAsciiFromCanvas(canvas, palette, invert);
+            const newAscii = getAsciiFromCanvas(canvas, palette, isColorInverted);
             const newFontSize = specs.width / newResolution;
 
             setSpecs({
@@ -55,99 +54,61 @@ const App: React.FC = () => {
     };
 
     const debounceOnresolutionChange = debounce(
-        (file: File, resolution, palette, invert) =>
-            onResolutionChange(file, resolution, palette, invert),
+        (file: File, resolution, palette, isColorInverted) =>
+            onResolutionChange(file, resolution, palette, isColorInverted),
         0,
     );
 
     return (
         <div className="flex-container">
-            <div className="menu">
-                <div className="menu-entry">
-                    <label htmlFor="file-upload" className="clickable-button">
-                        Upload an image
-                    </label>
-                    <input
-                        id="file-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) => {
-                            const myFile = event.target.files?.[0];
-                            if (!myFile) {
-                                return;
-                            }
-                            setCurrentFile(myFile);
-                            debounceOnresolutionChange(
-                                myFile,
-                                initialState.resolution,
-                                palette,
-                                invert,
-                            );
-                        }}
-                    />
-                </div>
-                <SliderSection
-                    specs={specs}
-                    onSpecsChange={(specs) => {
-                        setSpecs(specs);
-                    }}
-                    onResolutionChange={(resolution) => {
-                        if (!currentFile) {
-                            return;
-                        }
-                        debounceOnresolutionChange(currentFile, resolution, palette, invert);
-                    }}
-                />
-                <PaletteDropdown
-                    selectedOption={palette}
-                    onOptionChange={(option) => {
-                        if (!currentFile) {
-                            return;
-                        }
-                        debounceOnresolutionChange(currentFile, specs.resolution, option, invert);
-                        setPalette(option);
-                    }}
-                />
-
-                <form>
-                    <div className="checkboxes">
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={invert}
-                                onChange={() => {
-                                    if (!currentFile) {
-                                        return;
-                                    }
-                                    debounceOnresolutionChange(
-                                        currentFile,
-                                        specs.resolution,
-                                        palette,
-                                        !invert,
-                                    );
-                                    setInvert(!invert);
-                                }}
-                            />
-                            {'inverse?'}
-                        </label>
-                    </div>
-                </form>
-
-                <div className="menu-entry">
-                    <label htmlFor="clipboard-button" className="clickable-button">
-                        Save to clipboard
-                    </label>
-
-                    <button
-                        id="clipboard-button"
-                        className="hidden-button"
-                        onClick={() => {
-                            navigator.clipboard.writeText(ascii);
-                        }}>
-                        {'save to clipboard'}
-                    </button>
-                </div>
-            </div>
+            <Menu
+                onFileUpload={(myFile: File) => {
+                    setCurrentFile(myFile);
+                    debounceOnresolutionChange(
+                        myFile,
+                        initialState.resolution,
+                        palette,
+                        isColorInverted,
+                    );
+                }}
+                onResolutionChange={(resolution: number) => {
+                    if (!currentFile) {
+                        return;
+                    }
+                    debounceOnresolutionChange(currentFile, resolution, palette, isColorInverted);
+                }}
+                specs={specs}
+                onSpecsChange={(specs: SpecsState) => setSpecs(specs)}
+                palette={palette}
+                onPaletteChange={(newPalette) => {
+                    if (!currentFile) {
+                        return;
+                    }
+                    debounceOnresolutionChange(
+                        currentFile,
+                        specs.resolution,
+                        newPalette,
+                        isColorInverted,
+                    );
+                    setPalette(newPalette);
+                }}
+                isColorInverted={isColorInverted}
+                onColorInvertedToggle={() => {
+                    if (!currentFile) {
+                        return;
+                    }
+                    debounceOnresolutionChange(
+                        currentFile,
+                        specs.resolution,
+                        palette,
+                        !isColorInverted,
+                    );
+                    setInvert(!isColorInverted);
+                }}
+                onCopy={() => {
+                    navigator.clipboard.writeText(ascii);
+                }}
+            />
             <pre>
                 <div
                     className="ascii"
