@@ -5,6 +5,7 @@ import { SpecsState } from './App';
 
 export const Menu = ({
     onFileUpload,
+    onVideoUpload,
     onResolutionChange,
     specs,
     onSpecsChange,
@@ -15,6 +16,7 @@ export const Menu = ({
     onCopy,
 }: {
     onFileUpload: (file: File) => void;
+    onVideoUpload: (video: File) => void;
     onResolutionChange: (resolution: number) => void;
     specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
@@ -40,6 +42,23 @@ export const Menu = ({
                             return;
                         }
                         onFileUpload(myFile);
+                    }}
+                />
+            </div>
+            <div className="menu-entry">
+                <label htmlFor="video-upload" className="clickable-button">
+                    Upload a video
+                </label>
+                <input
+                    id="video-upload"
+                    type="file"
+                    accept="video/*"
+                    onChange={(event) => {
+                        const videoFile = event.target.files?.[0];
+                        if (!videoFile) {
+                            return;
+                        }
+                        onVideoUpload(videoFile);
                     }}
                 />
             </div>

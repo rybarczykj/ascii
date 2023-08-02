@@ -24,7 +24,7 @@
 
 export const getAsciiFromCanvas = (
     canvas: HTMLCanvasElement,
-    asciiChars: string,
+    asciiChars: string | string[],
     inverse = false,
 ): string => {
     const context = canvas.getContext('2d');
@@ -54,33 +54,35 @@ export const getAsciiFromCanvas = (
     return ascii;
 };
 
+const resize = (image: HTMLImageElement, maxWidth: number, canvas: HTMLCanvasElement) => {
+    let width = image.width;
+    let height = image.height;
+
+    if (width > maxWidth) {
+        height *= maxWidth / width;
+        width = maxWidth;
+    }
+    height *= 0.6;
+
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    context?.drawImage(image, 0, 0, width, height);
+    return canvas;
+};
+
 interface IResizeImageOptions {
     maxWidth: number;
     file: File;
 }
+
+// Returns a Canvas with the image resized to be under MaxHeight
 export const resizeImage = (settings: IResizeImageOptions): Promise<HTMLCanvasElement> => {
     const file = settings.file;
     const maxWidth = settings.maxWidth;
     const reader = new FileReader();
     const image = new Image();
     const canvas = document.createElement('canvas');
-
-    const resize = () => {
-        let width = image.width;
-        let height = image.height;
-
-        if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-        }
-        height *= 0.6;
-
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext('2d');
-        context?.drawImage(image, 0, 0, width, height);
-        return canvas;
-    };
 
     return new Promise<HTMLCanvasElement>((ok, no) => {
         if (!file.type.match(/image.*/)) {
@@ -89,7 +91,7 @@ export const resizeImage = (settings: IResizeImageOptions): Promise<HTMLCanvasEl
         }
 
         reader.onload = (readerEvent: any) => {
-            image.onload = () => ok(resize());
+            image.onload = () => ok(resize(image, maxWidth, canvas));
             image.src = readerEvent.target.result;
         };
         reader.readAsDataURL(file);

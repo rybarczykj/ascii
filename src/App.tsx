@@ -4,6 +4,9 @@ import debounce from 'lodash.debounce';
 import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
 import { ASCIICHARS } from './PaletteDropdown';
 import { Menu } from './Menu';
+import { processVideoFrames } from './process-video';
+import { ASCIIArtPrinter } from './asciiVideo';
+import { isEmpty } from 'lodash';
 const ARTWIDTH = 700;
 
 export interface SpecsState {
@@ -27,6 +30,8 @@ const App: React.FC = () => {
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [specs, setSpecs] = React.useState<SpecsState>(initialState);
 
+    const [videoFrames, setVideoFrames] = React.useState<string[]>([]);
+
     const [palette, setPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
 
     const [isColorInverted, setInvert] = React.useState(false);
@@ -34,7 +39,7 @@ const App: React.FC = () => {
     const onResolutionChange = (
         imageFile: File,
         newResolution: number,
-        palette: string,
+        palette: string | string[],
         isColorInverted: boolean,
     ) => {
         resizeImage({
@@ -64,12 +69,26 @@ const App: React.FC = () => {
             <Menu
                 onFileUpload={(myFile: File) => {
                     setCurrentFile(myFile);
+                    // reset video frames as well
+                    setVideoFrames([]);
                     debounceOnresolutionChange(
                         myFile,
                         initialState.resolution,
                         palette,
                         isColorInverted,
                     );
+                }}
+                onVideoUpload={(videoFile: File) => {
+                    setCurrentFile(videoFile);
+
+                    const video = document.createElement('video');
+                    video.src = URL.createObjectURL(videoFile);
+
+                    processVideoFrames(video, 1000, palette, isColorInverted, (frames) => {
+                        setVideoFrames(frames);
+                    });
+                    // reset ascii as well
+                    setAscii('');
                 }}
                 onResolutionChange={(resolution: number) => {
                     if (!currentFile) {
@@ -116,7 +135,15 @@ const App: React.FC = () => {
                         fontSize: `${specs.zoom * specs.fontSize}px`,
                         lineHeight: 1,
                         fontWeight: specs.weight,
-                    }}>{`${ascii}`}</div>
+                    }}>
+                    {ascii !== '' ? (
+                        `${ascii}`
+                    ) : !isEmpty(videoFrames) ? (
+                        <ASCIIArtPrinter asciiFrames={videoFrames} frameRate={20} />
+                    ) : (
+                        '{(-.-)/^'
+                    )}
+                </div>
             </pre>
         </div>
     );
