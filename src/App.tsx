@@ -4,8 +4,8 @@ import debounce from 'lodash.debounce';
 import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
 import { ASCIICHARS } from './PaletteDropdown';
 import { Menu } from './Menu';
-import { processVideoFrames } from './process-video';
-import { ASCIIArtPrinter } from './asciiVideo';
+import { processVideoFrames } from './video/process-video';
+import { AsciiVideo } from './video/asciiVideo';
 import { isEmpty } from 'lodash';
 const ARTWIDTH = 700;
 
@@ -139,7 +139,7 @@ const App: React.FC = () => {
                     {ascii !== '' ? (
                         `${ascii}`
                     ) : !isEmpty(videoFrames) ? (
-                        <ASCIIArtPrinter asciiFrames={videoFrames} frameRate={20} />
+                        <AsciiVideo asciiFrames={videoFrames} frameRate={20} />
                     ) : (
                         '{(-.-)/^'
                     )}

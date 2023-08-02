@@ -1,8 +1,8 @@
-import { getAsciiFromCanvas } from './ascii-utils';
+import { getAsciiFromCanvas } from '../ascii-utils';
 
 export const processVideoFrames = async (
     video: HTMLVideoElement,
-    maxWwidth: number,
+    maxwidth: number,
     palette: string | string[],
     isColorInverted: boolean,
     onVideoFramesChange: (frame: string[]) => void,

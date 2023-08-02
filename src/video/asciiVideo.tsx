@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const ASCIIArtPrinter = ({
+export const AsciiVideo = ({
     asciiFrames,
     frameRate,
 }: {
