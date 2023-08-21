@@ -2,10 +2,11 @@ import React from 'react';
 
 export const AsciiVideo = ({
     asciiFrames,
-    frameRate,
+    frameRate = 10,
 }: {
     asciiFrames: string[];
-    frameRate: number;
+    // the frame rate to play the video at (has nothing to do with video creation)
+    frameRate?: number;
 }): JSX.Element | null => {
     if (asciiFrames.length == 0) {
         return null;

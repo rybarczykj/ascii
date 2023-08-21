@@ -27,8 +27,21 @@ export const getAsciiFromCanvas = (
     asciiChars: string | string[],
     inverse = false,
 ): string => {
-    const context = canvas.getContext('2d');
-    const data = context?.getImageData(0, 0, canvas.width, canvas.height);
+    const context = canvas.getContext('2d', {
+        willReadFrequently: true,
+    });
+
+    return getAsciiFromContext(context, canvas.width, canvas.height, asciiChars, inverse);
+};
+
+export const getAsciiFromContext = (
+    context: CanvasRenderingContext2D | null,
+    canvasWidth: number,
+    canvasHeight: number,
+    asciiChars: string | string[],
+    inverse = false,
+): string => {
+    const data = context?.getImageData(0, 0, canvasWidth, canvasHeight);
 
     if (!data) {
         return '';

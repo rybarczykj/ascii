@@ -84,32 +84,56 @@ const App: React.FC = () => {
                     const video = document.createElement('video');
                     video.src = URL.createObjectURL(videoFile);
 
-                    processVideoFrames(video, 1000, palette, isColorInverted, (frames) => {
-                        setVideoFrames(frames);
-                    });
                     // reset ascii as well
                     setAscii('');
+
+                    processVideoFrames(
+                        video,
+                        palette,
+                        specs.resolution,
+                        isColorInverted,
+                        (frames) => {
+                            setVideoFrames(frames);
+                        },
+                    );
                 }}
                 onResolutionChange={(resolution: number) => {
                     if (!currentFile) {
                         return;
                     }
-                    debounceOnresolutionChange(currentFile, resolution, palette, isColorInverted);
+                    if (!isEmpty(videoFrames)) {
+                        const video = document.createElement('video');
+                        video.src = URL.createObjectURL(currentFile);
+
+                        processVideoFrames(
+                            video,
+                            palette,
+                            specs.resolution,
+                            isColorInverted,
+                            setVideoFrames,
+                        );
+                    } else {
+                        debounceOnresolutionChange(
+                            currentFile,
+                            resolution,
+                            palette,
+                            isColorInverted,
+                        );
+                    }
                 }}
                 specs={specs}
                 onSpecsChange={(specs: SpecsState) => setSpecs(specs)}
                 palette={palette}
                 onPaletteChange={(newPalette) => {
-                    if (!currentFile) {
-                        return;
-                    }
-                    debounceOnresolutionChange(
-                        currentFile,
-                        specs.resolution,
-                        newPalette,
-                        isColorInverted,
-                    );
                     setPalette(newPalette);
+                    if (currentFile) {
+                        debounceOnresolutionChange(
+                            currentFile,
+                            specs.resolution,
+                            newPalette,
+                            isColorInverted,
+                        );
+                    }
                 }}
                 isColorInverted={isColorInverted}
                 onColorInvertedToggle={() => {
@@ -139,7 +163,7 @@ const App: React.FC = () => {
                     {ascii !== '' ? (
                         `${ascii}`
                     ) : !isEmpty(videoFrames) ? (
-                        <AsciiVideo asciiFrames={videoFrames} frameRate={20} />
+                        <AsciiVideo asciiFrames={videoFrames} />
                     ) : (
                         '{(-.-)/^'
                     )}

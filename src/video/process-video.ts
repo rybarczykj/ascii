@@ -1,9 +1,9 @@
-import { getAsciiFromCanvas } from '../ascii-utils';
+import { getAsciiFromContext } from '../ascii-utils';
 
 export const processVideoFrames = async (
     video: HTMLVideoElement,
-    maxwidth: number,
     palette: string | string[],
+    asciiResolution: number,
     isColorInverted: boolean,
     onVideoFramesChange: (frame: string[]) => void,
 ) => {
@@ -15,14 +15,17 @@ export const processVideoFrames = async (
     });
 
     const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', {
+        willReadFrequently: true,
+    });
     const frames: string[] = [];
 
-    const frameRate = 5; // Number of frames per second (adjust this based on performance)
+    const frameRate = 10; // Number of frames per second (adjust this based on performance)
 
     // Calculate the width and height for processing based on the original video's aspect ratio
     const aspectRatio = video.videoWidth / video.videoHeight;
-    const width = 100; // Adjust this for the desired width of ASCII frames
+
+    const width = asciiResolution;
     const height = width / aspectRatio;
 
     // Set the canvas dimensions to match the processing size
@@ -33,12 +36,10 @@ export const processVideoFrames = async (
         if (!context || !video) return;
 
         context.drawImage(video, 0, 0, width, height);
-        // TODO: what is this??
-        // const dataURL = canvas.toDataURL();
-        const frameAscii = await getAsciiFromCanvas(canvas, palette, isColorInverted); // Create a new function getAsciiFromDataURL to convert data URL to ASCII art
+        const frameAscii = getAsciiFromContext(context, width, height, palette, isColorInverted);
         frames.push(frameAscii);
 
-        if (!video.paused && !video.ended) {
+        if (!video.paused && !video.ended && !(video.currentTime >= video.duration)) {
             setTimeout(processFrame, 1000 / frameRate);
             video.currentTime += 1 / frameRate;
         } else {
