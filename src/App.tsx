@@ -7,6 +7,7 @@ import { Menu } from './Menu';
 import { processVideoFrames } from './video/process-video';
 import { AsciiVideo } from './video/asciiVideo';
 import { isEmpty } from 'lodash';
+
 const ARTWIDTH = 700;
 
 export interface SpecsState {

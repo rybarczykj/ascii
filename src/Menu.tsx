@@ -2,6 +2,7 @@ import { ReactElement } from 'react';
 import PaletteDropdown from './PaletteDropdown';
 import { SliderSection } from './SliderSection';
 import { SpecsState } from './App';
+import { heic2any } from 'heic-convert'; // Import heic2any function
 
 export const Menu = ({
     onFileUpload,
@@ -35,13 +36,35 @@ export const Menu = ({
                 <input
                     id="file-upload"
                     type="file"
-                    accept="image/*"
+                    accept="image/*, .heic"
                     onChange={(event) => {
                         const myFile = event.target.files?.[0];
                         if (!myFile) {
                             return;
                         }
-                        onFileUpload(myFile);
+                        if (myFile.type === 'image/heic') {
+                            try {
+                                // Convert HEIC image to JPEG format
+                                const jpegBlob = heic2any({
+                                    blob: myFile,
+                                    toType: 'image/jpeg',
+                                });
+
+                                // Create a new File instance with the converted blob
+                                const convertedFile = new File(
+                                    [jpegBlob],
+                                    myFile.name.replace('.heic', '.jpg'),
+                                    { type: 'image/jpeg' },
+                                );
+
+                                // Continue processing with the converted image
+                                onFileUpload(convertedFile);
+                            } catch (error) {
+                                console.error('Error converting HEIC image:', error);
+                            }
+                        } else {
+                            onFileUpload(myFile);
+                        }
                     }}
                 />
             </div>
