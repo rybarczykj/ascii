@@ -105,11 +105,10 @@ const App: React.FC = () => {
                     if (!isEmpty(videoFrames)) {
                         const video = document.createElement('video');
                         video.src = URL.createObjectURL(currentFile);
-
                         processVideoFrames(
                             video,
                             palette,
-                            specs.resolution,
+                            resolution,
                             isColorInverted,
                             setVideoFrames,
                         );
@@ -126,8 +125,22 @@ const App: React.FC = () => {
                 onSpecsChange={(specs: SpecsState) => setSpecs(specs)}
                 palette={palette}
                 onPaletteChange={(newPalette) => {
+                    // TODO refactor these onChanges for less code duupe
                     setPalette(newPalette);
-                    if (currentFile) {
+                    if (!currentFile) {
+                        return;
+                    }
+                    if (!isEmpty(videoFrames)) {
+                        const video = document.createElement('video');
+                        video.src = URL.createObjectURL(currentFile);
+                        processVideoFrames(
+                            video,
+                            newPalette,
+                            specs.resolution,
+                            isColorInverted,
+                            setVideoFrames,
+                        );
+                    } else {
                         debounceOnresolutionChange(
                             currentFile,
                             specs.resolution,
