@@ -2,7 +2,8 @@ import { ReactElement } from 'react';
 import PaletteDropdown from './PaletteDropdown';
 import { SliderSection } from './SliderSection';
 import { SpecsState } from './App';
-import { heic2any } from 'heic-convert'; // Import heic2any function
+import heic2any from 'heic2any';
+import React from 'react';
 
 export const Menu = ({
     onFileUpload,
@@ -45,20 +46,21 @@ export const Menu = ({
                         if (myFile.type === 'image/heic') {
                             try {
                                 // Convert HEIC image to JPEG format
-                                const jpegBlob = heic2any({
+                                heic2any({
                                     blob: myFile,
                                     toType: 'image/jpeg',
+                                }).then((convertedBlob) => {
+                                    const convertedFile = new File(
+                                        [convertedBlob as Blob],
+                                        myFile.name.replace('.heic', '.jpg'),
+                                        { type: 'image/jpeg' },
+                                    );
+
+                                    // Continue processing with the converted image
+                                    onFileUpload(convertedFile);
                                 });
 
                                 // Create a new File instance with the converted blob
-                                const convertedFile = new File(
-                                    [jpegBlob],
-                                    myFile.name.replace('.heic', '.jpg'),
-                                    { type: 'image/jpeg' },
-                                );
-
-                                // Continue processing with the converted image
-                                onFileUpload(convertedFile);
                             } catch (error) {
                                 console.error('Error converting HEIC image:', error);
                             }
