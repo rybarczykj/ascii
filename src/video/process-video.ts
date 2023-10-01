@@ -26,7 +26,8 @@ export const processVideoFrames = async (
     const aspectRatio = video.videoWidth / video.videoHeight;
 
     const width = asciiResolution;
-    const height = width / aspectRatio;
+    // 0.6 because the ascii characters are taller than they are wide
+    const height = (0.6 * width) / aspectRatio;
 
     // Set the canvas dimensions to match the processing size
     canvas.width = width;
