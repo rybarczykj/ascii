@@ -6,7 +6,7 @@ import { ASCIICHARS } from './PaletteDropdown';
 import { Menu } from './Menu';
 import { processVideoFrames } from './video/process-video';
 import { AsciiVideo } from './video/asciiVideo';
-import { isEmpty } from 'lodash';
+import { isEmpty, set } from 'lodash';
 
 const ARTWIDTH = 700;
 
@@ -27,11 +27,11 @@ const initialState = {
 };
 
 const App: React.FC = () => {
-    const [ascii, setAscii] = React.useState('');
+    const [ascii, setAscii] = React.useState<string | string[]>('');
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [specs, setSpecs] = React.useState<SpecsState>(initialState);
 
-    const [videoFrames, setVideoFrames] = React.useState<string[]>([]);
+    console.log('specs', specs);
 
     const [palette, setPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
 
@@ -70,8 +70,7 @@ const App: React.FC = () => {
             <Menu
                 onFileUpload={(myFile: File) => {
                     setCurrentFile(myFile);
-                    // reset video frames as well
-                    setVideoFrames([]);
+                    setAscii('');
                     debounceOnresolutionChange(
                         myFile,
                         initialState.resolution,
@@ -94,7 +93,7 @@ const App: React.FC = () => {
                         specs.resolution,
                         isColorInverted,
                         (frames) => {
-                            setVideoFrames(frames);
+                            setAscii(frames);
                         },
                     );
                 }}
@@ -102,7 +101,7 @@ const App: React.FC = () => {
                     if (!currentFile) {
                         return;
                     }
-                    if (!isEmpty(videoFrames)) {
+                    if (Array.isArray(ascii)) {
                         const video = document.createElement('video');
                         video.src = URL.createObjectURL(currentFile);
                         processVideoFrames(
@@ -110,7 +109,9 @@ const App: React.FC = () => {
                             palette,
                             resolution,
                             isColorInverted,
-                            setVideoFrames,
+                            (frames) => {
+                                setAscii(frames);
+                            },
                         );
                     } else {
                         debounceOnresolutionChange(
@@ -130,7 +131,7 @@ const App: React.FC = () => {
                     if (!currentFile) {
                         return;
                     }
-                    if (!isEmpty(videoFrames)) {
+                    if (Array.isArray(ascii)) {
                         const video = document.createElement('video');
                         video.src = URL.createObjectURL(currentFile);
                         processVideoFrames(
@@ -138,7 +139,9 @@ const App: React.FC = () => {
                             newPalette,
                             specs.resolution,
                             isColorInverted,
-                            setVideoFrames,
+                            (frames) => {
+                                setAscii(frames);
+                            },
                         );
                     } else {
                         debounceOnresolutionChange(
@@ -164,7 +167,7 @@ const App: React.FC = () => {
                 }}
                 onCopy={() => {
                     navigator.clipboard.writeText(
-                        !isEmpty(videoFrames) ? JSON.stringify(videoFrames) : ascii,
+                        typeof ascii === 'string' ? ascii : JSON.stringify(ascii),
                     );
                 }}
             />
@@ -172,14 +175,16 @@ const App: React.FC = () => {
                 <div
                     className="ascii"
                     style={{
-                        fontSize: `${specs.zoom * specs.fontSize}px`,
+                        fontSize: `${specs.zoom * 7}px`,
                         lineHeight: 1,
                         fontWeight: specs.weight,
                     }}>
                     {ascii !== '' ? (
-                        `${ascii}`
-                    ) : !isEmpty(videoFrames) ? (
-                        <AsciiVideo asciiFrames={videoFrames} />
+                        typeof ascii === 'string' ? (
+                            ascii
+                        ) : (
+                            <AsciiVideo asciiFrames={ascii} />
+                        )
                     ) : (
                         '{(-.-)/^'
                     )}
