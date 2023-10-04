@@ -48,11 +48,9 @@ const App: React.FC = () => {
             maxWidth: newResolution,
         }).then((canvas) => {
             const newAscii = getAsciiFromCanvas(canvas, palette, isColorInverted);
-            const newFontSize = specs.width / newResolution;
 
             setSpecs({
                 ...specs,
-                fontSize: newFontSize,
                 resolution: newResolution,
             });
             setAscii(newAscii);
@@ -64,6 +62,8 @@ const App: React.FC = () => {
             onResolutionChange(file, resolution, palette, isColorInverted),
         0,
     );
+
+    const video = document.createElement('video');
 
     return (
         <div className="flex-container">
@@ -81,38 +81,20 @@ const App: React.FC = () => {
                 onVideoUpload={(videoFile: File) => {
                     setCurrentFile(videoFile);
 
-                    const video = document.createElement('video');
                     video.src = URL.createObjectURL(videoFile);
 
                     // reset ascii as well
                     setAscii('');
 
-                    processVideoFrames(
-                        video,
-                        palette,
-                        specs.resolution,
-                        isColorInverted,
-                        (frames) => {
-                            setAscii(frames);
-                        },
-                    );
+                    processVideoFrames(video, palette, specs.resolution, isColorInverted, setAscii);
                 }}
                 onResolutionChange={(resolution: number) => {
                     if (!currentFile) {
                         return;
                     }
                     if (Array.isArray(ascii)) {
-                        const video = document.createElement('video');
                         video.src = URL.createObjectURL(currentFile);
-                        processVideoFrames(
-                            video,
-                            palette,
-                            resolution,
-                            isColorInverted,
-                            (frames) => {
-                                setAscii(frames);
-                            },
-                        );
+                        processVideoFrames(video, palette, resolution, isColorInverted, setAscii);
                     } else {
                         debounceOnresolutionChange(
                             currentFile,
@@ -132,16 +114,13 @@ const App: React.FC = () => {
                         return;
                     }
                     if (Array.isArray(ascii)) {
-                        const video = document.createElement('video');
                         video.src = URL.createObjectURL(currentFile);
                         processVideoFrames(
                             video,
                             newPalette,
                             specs.resolution,
                             isColorInverted,
-                            (frames) => {
-                                setAscii(frames);
-                            },
+                            setAscii,
                         );
                     } else {
                         debounceOnresolutionChange(
