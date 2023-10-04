@@ -163,7 +163,9 @@ const App: React.FC = () => {
                     setInvert(!isColorInverted);
                 }}
                 onCopy={() => {
-                    navigator.clipboard.writeText(ascii);
+                    navigator.clipboard.writeText(
+                        !isEmpty(videoFrames) ? JSON.stringify(videoFrames) : ascii,
+                    );
                 }}
             />
             <pre>
