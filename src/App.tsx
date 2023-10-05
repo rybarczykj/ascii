@@ -1,14 +1,7 @@
 import './index.css';
 import React from 'react';
-import debounce from 'lodash.debounce';
-import { resizeImage, getAsciiFromCanvas } from './ascii-utils';
-import { ASCIICHARS } from './PaletteDropdown';
-import { Menu } from './Menu';
-import { processVideoFrames } from './video/process-video';
+import { MenuContainer as Menu } from './Menu';
 import { AsciiVideo } from './video/asciiVideo';
-import { isEmpty, set } from 'lodash';
-
-const ARTWIDTH = 700;
 
 export interface SpecsState {
     fontSize: number;
@@ -18,132 +11,23 @@ export interface SpecsState {
     weight: number;
 }
 
-const initialState = {
-    fontSize: 30,
-    resolution: 100,
-    width: ARTWIDTH,
-    zoom: 1,
-    weight: 400,
-};
-
 const App: React.FC = () => {
     const [ascii, setAscii] = React.useState<string | string[]>('');
-    const [currentFile, setCurrentFile] = React.useState<File>();
-    const [specs, setSpecs] = React.useState<SpecsState>(initialState);
-
+    const [specs, setSpecs] = React.useState<SpecsState>({
+        fontSize: 30,
+        resolution: 100,
+        width: 700,
+        zoom: 1,
+        weight: 400,
+    });
     console.log('specs', specs);
-
-    const [palette, setPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
-
-    const [isColorInverted, setInvert] = React.useState(false);
-
-    const onResolutionChange = (
-        imageFile: File,
-        newResolution: number,
-        palette: string | string[],
-        isColorInverted: boolean,
-    ) => {
-        resizeImage({
-            file: imageFile,
-            maxWidth: newResolution,
-        }).then((canvas) => {
-            const newAscii = getAsciiFromCanvas(canvas, palette, isColorInverted);
-
-            setSpecs({
-                ...specs,
-                resolution: newResolution,
-            });
-            setAscii(newAscii);
-        });
-    };
-
-    const debounceOnresolutionChange = debounce(
-        (file: File, resolution, palette, isColorInverted) =>
-            onResolutionChange(file, resolution, palette, isColorInverted),
-        0,
-    );
-
-    const video = document.createElement('video');
 
     return (
         <div className="flex-container">
             <Menu
-                onFileUpload={(myFile: File) => {
-                    setCurrentFile(myFile);
-                    setAscii('');
-                    debounceOnresolutionChange(
-                        myFile,
-                        initialState.resolution,
-                        palette,
-                        isColorInverted,
-                    );
-                }}
-                onVideoUpload={(videoFile: File) => {
-                    setCurrentFile(videoFile);
-
-                    video.src = URL.createObjectURL(videoFile);
-
-                    // reset ascii as well
-                    setAscii('');
-
-                    processVideoFrames(video, palette, specs.resolution, isColorInverted, setAscii);
-                }}
-                onResolutionChange={(resolution: number) => {
-                    if (!currentFile) {
-                        return;
-                    }
-                    if (Array.isArray(ascii)) {
-                        video.src = URL.createObjectURL(currentFile);
-                        processVideoFrames(video, palette, resolution, isColorInverted, setAscii);
-                    } else {
-                        debounceOnresolutionChange(
-                            currentFile,
-                            resolution,
-                            palette,
-                            isColorInverted,
-                        );
-                    }
-                }}
                 specs={specs}
                 onSpecsChange={(specs: SpecsState) => setSpecs(specs)}
-                palette={palette}
-                onPaletteChange={(newPalette) => {
-                    // TODO refactor these onChanges for less code duupe
-                    setPalette(newPalette);
-                    if (!currentFile) {
-                        return;
-                    }
-                    if (Array.isArray(ascii)) {
-                        video.src = URL.createObjectURL(currentFile);
-                        processVideoFrames(
-                            video,
-                            newPalette,
-                            specs.resolution,
-                            isColorInverted,
-                            setAscii,
-                        );
-                    } else {
-                        debounceOnresolutionChange(
-                            currentFile,
-                            specs.resolution,
-                            newPalette,
-                            isColorInverted,
-                        );
-                    }
-                }}
-                isColorInverted={isColorInverted}
-                onColorInvertedToggle={() => {
-                    if (!currentFile) {
-                        return;
-                    }
-                    debounceOnresolutionChange(
-                        currentFile,
-                        specs.resolution,
-                        palette,
-                        !isColorInverted,
-                    );
-                    setInvert(!isColorInverted);
-                }}
+                onAsciiChange={(ascii: string | string[]) => setAscii(ascii)}
                 onCopy={() => {
                     navigator.clipboard.writeText(
                         typeof ascii === 'string' ? ascii : JSON.stringify(ascii),
