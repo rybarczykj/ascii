@@ -6,7 +6,7 @@ import heic2any from 'heic2any';
 import React from 'react';
 import { processVideoFrames } from './video/process-video';
 import { debounce, set, slice } from 'lodash';
-import { getAsciiFromCanvas, resizeImage } from './ascii-utils';
+import { getAsciiFromGreyscale, getGreyscale, resizeImage } from './ascii-utils';
 
 interface MenuContainerProps {
     onAsciiChange: (ascii: string | string[]) => void;
@@ -147,6 +147,9 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
 
     const video = document.createElement('video');
 
+    // store greyscale so it can be a lookup table
+    const greyscale = React.useRef<number[][]>([]);
+
     const updateAscii = ({
         palette,
         isColorInverted,
@@ -154,6 +157,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         file,
         isVideo,
         contrast,
+        resetLookups = false,
     }: {
         palette: string | string[];
         isColorInverted: boolean;
@@ -161,6 +165,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         file: File | undefined;
         isVideo: boolean;
         contrast: number;
+        resetLookups?: boolean;
     }) => {
         if (!file) {
             return;
@@ -175,7 +180,25 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 file: file,
                 maxWidth: resolution,
             }).then((canvas) => {
-                const newAscii = getAsciiFromCanvas(canvas, palette, isColorInverted, contrast);
+                const context = canvas.getContext('2d', {
+                    willReadFrequently: true,
+                });
+                const data = context?.getImageData(0, 0, canvas.width, canvas.height);
+                if (!data) {
+                    return;
+                }
+
+                // avoid recalculating greyscale for each frame
+                if (resetLookups) {
+                    greyscale.current = getGreyscale(data);
+                }
+
+                const newAscii = getAsciiFromGreyscale(
+                    greyscale.current,
+                    palette,
+                    isColorInverted,
+                    contrast,
+                );
 
                 onAsciiChange(newAscii);
             });
@@ -194,18 +217,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             file: currentFile,
             isVideo: isAsciiVideo,
             contrast,
-        });
-    }, 10);
-
-    const debouncedOnContrastChange = debounce((contrast: number) => {
-        setContrast(contrast);
-        updateAscii({
-            palette: selectedPalette,
-            isColorInverted,
-            resolution: specs.resolution,
-            file: currentFile,
-            isVideo: isAsciiVideo,
-            contrast,
+            resetLookups: true,
         });
     }, 10);
 
@@ -222,6 +234,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     file: imageFile,
                     isVideo: false,
                     contrast,
+                    resetLookups: true,
                 });
                 setCurrentFile(imageFile);
             }}
@@ -234,6 +247,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     file: videoFile,
                     isVideo: true,
                     contrast,
+                    resetLookups: true,
                 });
                 setCurrentFile(videoFile);
             }}
@@ -262,7 +276,17 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 });
             }}
             contrast={contrast}
-            onContrastChange={debouncedOnContrastChange}
+            onContrastChange={(contrast) => {
+                setContrast(contrast);
+                updateAscii({
+                    palette: selectedPalette,
+                    isColorInverted,
+                    resolution: specs.resolution,
+                    file: currentFile,
+                    isVideo: isAsciiVideo,
+                    contrast,
+                });
+            }}
         />
     );
 };

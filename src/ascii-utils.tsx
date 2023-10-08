@@ -22,37 +22,24 @@
 // const asciiChars = '#8?0+:.,';
 // const asciiChars = '8#|:.';
 
-export const getAsciiFromCanvas = (
-    canvas: HTMLCanvasElement,
+export const getAsciiFromContext = (
+    context: CanvasRenderingContext2D,
     asciiChars: string | string[],
     inverse = false,
     contrast?: number,
 ): string => {
-    const context = canvas.getContext('2d', {
-        willReadFrequently: true,
-    });
-
-    return getAsciiFromContext(context, canvas.width, canvas.height, asciiChars, inverse, contrast);
+    const imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+    const greyscale = getGreyscale(imageData);
+    const ascii = getAsciiFromGreyscale(greyscale, asciiChars, inverse, contrast);
+    return ascii;
 };
 
-export const getAsciiFromContext = (
-    context: CanvasRenderingContext2D | null,
-    canvasWidth: number,
-    canvasHeight: number,
-    asciiChars: string | string[],
-    inverse = false,
-    contrast?: number,
-): string => {
-    const data = context?.getImageData(0, 0, canvasWidth, canvasHeight);
-
-    if (!data) {
-        return '';
-    }
-
+export const getGreyscale = (data: ImageData): number[][] => {
     const pixels = data.data;
 
-    let ascii = '';
+    const greyscale = [];
     for (let y = 0; y < data.height; y++) {
+        const greyscaleRow = [];
         for (let x = 0; x < data.width; x++) {
             const pixelIndex = (y * data.width + x) * 4;
             // perceived luminance acccording to https://en.wikipedia.org/wiki/Relative_luminance
@@ -60,6 +47,26 @@ export const getAsciiFromContext = (
                 0.2126 * pixels[pixelIndex] +
                 0.7152 * pixels[pixelIndex + 1] +
                 0.0722 * pixels[pixelIndex + 2];
+
+            greyscaleRow.push(luminance);
+        }
+        greyscale.push(greyscaleRow);
+    }
+    return greyscale;
+};
+
+export const getAsciiFromGreyscale = (
+    greyscale: number[][],
+    asciiChars: string | string[],
+    inverse = false,
+    contrast?: number,
+): string => {
+    let ascii = '';
+
+    // iterate over each row, and each pixel in the row
+    for (let y = 0; y < greyscale.length; y++) {
+        for (let x = 0; x < greyscale[y].length; x++) {
+            const luminance = greyscale[y][x];
 
             const contrastedLuminance = contrast
                 ? Math.max(Math.min((luminance - 127.5) * contrast, 255), 0)

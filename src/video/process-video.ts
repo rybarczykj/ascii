@@ -18,6 +18,8 @@ export const processVideoFrames = async (
     const context = canvas.getContext('2d', {
         willReadFrequently: true,
     });
+    if (!context || !video) return;
+
     const frames: string[] = [];
 
     const frameRate = 10; // Number of frames per second (adjust this based on performance)
@@ -30,14 +32,12 @@ export const processVideoFrames = async (
     const height = (0.6 * width) / aspectRatio;
 
     // Set the canvas dimensions to match the processing size
-    canvas.width = width;
-    canvas.height = height;
+    context.canvas.width = width;
+    context.canvas.height = height;
 
     const processFrame = async () => {
-        if (!context || !video) return;
-
         context.drawImage(video, 0, 0, width, height);
-        const frameAscii = getAsciiFromContext(context, width, height, palette, isColorInverted);
+        const frameAscii = getAsciiFromContext(context, palette, isColorInverted);
         frames.push(frameAscii);
 
         if (!video.paused && !video.ended && !(video.currentTime >= video.duration)) {
