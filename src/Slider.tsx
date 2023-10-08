@@ -9,6 +9,7 @@ interface SliderProps {
     min: number;
     max: number;
     step?: number;
+    disabled?: boolean;
 }
 
 export const Slider: React.FC<SliderProps> = ({
@@ -19,6 +20,7 @@ export const Slider: React.FC<SliderProps> = ({
     min,
     max,
     step,
+    disabled,
 }) => {
     return (
         <div className="slidecontainer">
@@ -31,6 +33,7 @@ export const Slider: React.FC<SliderProps> = ({
                 value={value}
                 onChange={onChange}
                 step={step}
+                disabled={disabled}
             />
             <output>{label}</output>
         </div>

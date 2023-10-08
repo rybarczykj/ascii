@@ -1,12 +1,15 @@
 import { Slider } from './Slider';
 import React from 'react';
 import { SpecsState } from './App';
+import { on } from 'events';
 
 export const SliderSection: React.FC<{
     specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
     onResolutionChange: (resolution: number) => void;
-}> = ({ specs, onSpecsChange, onResolutionChange }) => {
+    contrast: number;
+    onContrastChange: (contrast: number) => void;
+}> = ({ specs, onSpecsChange, onResolutionChange, contrast, onContrastChange }) => {
     return (
         <>
             <Slider
@@ -44,6 +47,19 @@ export const SliderSection: React.FC<{
                 min={0}
                 max={800}
                 label={specs.weight.toString()}
+            />
+
+            <Slider
+                title={'contrast:'}
+                onChange={(event) => {
+                    const newContrast = parseFloat(event.target.value);
+                    onContrastChange(newContrast);
+                }}
+                value={contrast}
+                min={0.1}
+                max={10}
+                step={0.1}
+                label={contrast.toString()}
             />
         </>
     );

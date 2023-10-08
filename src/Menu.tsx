@@ -24,6 +24,8 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     onPaletteChange: (palette: string | string[]) => void;
     isColorInverted: boolean;
     onColorInvertedToggle: () => void;
+    contrast: number;
+    onContrastChange: (contrast: number) => void;
 }
 
 const Menu = ({
@@ -37,6 +39,8 @@ const Menu = ({
     onPaletteChange,
     isColorInverted,
     onColorInvertedToggle,
+    contrast,
+    onContrastChange,
 }: MenuProps): ReactElement => {
     return (
         <div className="menu">
@@ -101,6 +105,8 @@ const Menu = ({
                 specs={specs}
                 onSpecsChange={onSpecsChange}
                 onResolutionChange={onResolutionChange}
+                contrast={contrast}
+                onContrastChange={onContrastChange}
             />
             <PaletteDropdown selectedOption={palette} onOptionChange={onPaletteChange} />
 
@@ -137,6 +143,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     const [isAsciiVideo, setIsAsciiVideo] = React.useState(false);
     const [selectedPalette, setSelectedPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
     const [isColorInverted, setInvert] = React.useState(false);
+    const [contrast, setContrast] = React.useState(1);
 
     const video = document.createElement('video');
 
@@ -146,12 +153,14 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         resolution,
         file,
         isVideo,
+        contrast,
     }: {
         palette: string | string[];
         isColorInverted: boolean;
         resolution: number;
         file: File | undefined;
         isVideo: boolean;
+        contrast: number;
     }) => {
         if (!file) {
             return;
@@ -166,7 +175,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 file: file,
                 maxWidth: resolution,
             }).then((canvas) => {
-                const newAscii = getAsciiFromCanvas(canvas, palette, isColorInverted);
+                const newAscii = getAsciiFromCanvas(canvas, palette, isColorInverted, contrast);
 
                 onAsciiChange(newAscii);
             });
@@ -184,8 +193,21 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             resolution,
             file: currentFile,
             isVideo: isAsciiVideo,
+            contrast,
         });
-    }, 0);
+    }, 10);
+
+    const debouncedOnContrastChange = debounce((contrast: number) => {
+        setContrast(contrast);
+        updateAscii({
+            palette: selectedPalette,
+            isColorInverted,
+            resolution: specs.resolution,
+            file: currentFile,
+            isVideo: isAsciiVideo,
+            contrast,
+        });
+    }, 10);
 
     return (
         <Menu
@@ -199,6 +221,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     resolution: specs.resolution,
                     file: imageFile,
                     isVideo: false,
+                    contrast,
                 });
                 setCurrentFile(imageFile);
             }}
@@ -210,6 +233,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     resolution: specs.resolution,
                     file: videoFile,
                     isVideo: true,
+                    contrast,
                 });
                 setCurrentFile(videoFile);
             }}
@@ -222,6 +246,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     resolution: specs.resolution,
                     file: currentFile,
                     isVideo: isAsciiVideo,
+                    contrast,
                 });
             }}
             isColorInverted={isColorInverted}
@@ -233,8 +258,11 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     resolution: specs.resolution,
                     file: currentFile,
                     isVideo: isAsciiVideo,
+                    contrast,
                 });
             }}
+            contrast={contrast}
+            onContrastChange={debouncedOnContrastChange}
         />
     );
 };

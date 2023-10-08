@@ -26,12 +26,13 @@ export const getAsciiFromCanvas = (
     canvas: HTMLCanvasElement,
     asciiChars: string | string[],
     inverse = false,
+    contrast?: number,
 ): string => {
     const context = canvas.getContext('2d', {
         willReadFrequently: true,
     });
 
-    return getAsciiFromContext(context, canvas.width, canvas.height, asciiChars, inverse);
+    return getAsciiFromContext(context, canvas.width, canvas.height, asciiChars, inverse, contrast);
 };
 
 export const getAsciiFromContext = (
@@ -40,6 +41,7 @@ export const getAsciiFromContext = (
     canvasHeight: number,
     asciiChars: string | string[],
     inverse = false,
+    contrast?: number,
 ): string => {
     const data = context?.getImageData(0, 0, canvasWidth, canvasHeight);
 
@@ -53,9 +55,17 @@ export const getAsciiFromContext = (
     for (let y = 0; y < data.height; y++) {
         for (let x = 0; x < data.width; x++) {
             const pixelIndex = (y * data.width + x) * 4;
+            // perceived luminance acccording to https://en.wikipedia.org/wiki/Relative_luminance
             const luminance =
-                (pixels[pixelIndex] + pixels[pixelIndex + 1] + pixels[pixelIndex + 2]) / 3;
-            const asciiIndex = Math.floor((luminance / 255) * (asciiChars.length - 1));
+                0.2126 * pixels[pixelIndex] +
+                0.7152 * pixels[pixelIndex + 1] +
+                0.0722 * pixels[pixelIndex + 2];
+
+            const contrastedLuminance = contrast
+                ? Math.max(Math.min((luminance - 127.5) * contrast, 255), 0)
+                : luminance;
+
+            const asciiIndex = Math.floor((contrastedLuminance / 255) * (asciiChars.length - 1));
             if (inverse) {
                 ascii += asciiChars[asciiChars.length - asciiIndex - 1];
             } else {
