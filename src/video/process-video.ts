@@ -6,6 +6,7 @@ export const processVideoFrames = async (
     asciiResolution: number,
     isColorInverted: boolean,
     onVideoFramesChange: (frame: string[]) => void,
+    contrast: number,
 ) => {
     // Wait for video metadata to load
     await new Promise<void>((resolve) => {
@@ -37,7 +38,7 @@ export const processVideoFrames = async (
 
     const processFrame = async () => {
         context.drawImage(video, 0, 0, width, height);
-        const frameAscii = getAsciiFromContext(context, palette, isColorInverted);
+        const frameAscii = getAsciiFromContext(context, palette, isColorInverted, contrast);
         frames.push(frameAscii);
 
         if (!video.paused && !video.ended && !(video.currentTime >= video.duration)) {

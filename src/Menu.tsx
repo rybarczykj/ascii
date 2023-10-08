@@ -174,7 +174,14 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         if (isVideo) {
             video.src = URL.createObjectURL(file);
 
-            processVideoFrames(video, palette, resolution, isColorInverted, onAsciiChange);
+            processVideoFrames(
+                video,
+                palette,
+                resolution,
+                isColorInverted,
+                onAsciiChange,
+                contrast,
+            );
         } else {
             resizeImage({
                 file: file,
