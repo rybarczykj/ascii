@@ -22,6 +22,7 @@ const App: React.FC = () => {
     });
     console.log('specs', specs);
 
+    // TODO: why isn't the size of the video fixed anymore? and when did it break?
     return (
         <div className="flex-container">
             <Menu
