@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import Dropdown from './Dropdown';
 import { SliderSection } from './SliderSection';
-import { SpecsState } from './App';
+import { Font, Fonts, SpecsState } from './App';
 import heic2any from 'heic2any';
 import React from 'react';
 import { processVideoFrames } from './video/process-video';
@@ -128,6 +128,15 @@ const Menu = ({
                 onOptionChange={onPaletteChange}
             />
 
+            <Dropdown
+                label="font"
+                options={Fonts.map((font: Font) => ({ value: font, label: font }))}
+                selectedOption={specs.fontFamily}
+                onOptionChange={(font) => {
+                    onSpecsChange({ ...specs, fontFamily: font as Font });
+                }}
+            />
+
             <form>
                 <div className="checkboxes">
                     <label>
@@ -167,6 +176,8 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
 
     // store greyscale so it can be a lookup table
     const greyscale = React.useRef<number[][]>([]);
+
+    console.log('selectedPalette', selectedPalette);
 
     const updateAscii = ({
         palette,

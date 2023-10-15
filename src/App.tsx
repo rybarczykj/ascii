@@ -3,12 +3,19 @@ import React from 'react';
 import { MenuContainer as Menu } from './Menu';
 import { AsciiVideo } from './video/asciiVideo';
 
+//rewrite as enum?
+
+export const Fonts = ['Ibm Plex Mono', 'Courier New', 'Monaco'];
+
+export type Font = (typeof Fonts)[number];
+
 export interface SpecsState {
     fontSize: number;
     resolution: number;
     width: number;
     zoom: number;
     weight: number;
+    fontFamily: Font;
 }
 
 const App: React.FC = () => {
@@ -19,6 +26,7 @@ const App: React.FC = () => {
         width: 700,
         zoom: 1,
         weight: 400,
+        fontFamily: 'Ibm Plex Mono',
     });
     console.log('specs', specs);
 
@@ -42,6 +50,7 @@ const App: React.FC = () => {
                         fontSize: `${specs.zoom * 7}px`,
                         lineHeight: 1,
                         fontWeight: specs.weight,
+                        fontFamily: specs.fontFamily,
                     }}>
                     {ascii !== '' ? (
                         typeof ascii === 'string' ? (

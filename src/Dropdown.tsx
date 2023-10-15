@@ -1,17 +1,22 @@
 import React from 'react';
 import CreatableSelect from 'react-select/creatable';
 
-interface DropdownProps {
+interface DropdownProps<T> {
     label: string;
     options: {
-        value: string | string[];
-        label: string | string[];
+        value: T;
+        label: T;
     }[];
-    selectedOption: string | string[];
-    onOptionChange: (option: string | string[]) => void;
+    selectedOption: T;
+    onOptionChange: (option: T) => void;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({ label, options, selectedOption, onOptionChange }) => {
+const Dropdown = <T,>({
+    label,
+    options,
+    selectedOption,
+    onOptionChange,
+}: DropdownProps<T>): JSX.Element => {
     return (
         <div className="menu-entry">
             <label htmlFor="options">{label}:</label>
