@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import PaletteDropdown, { ASCIICHARS } from './PaletteDropdown';
+import Dropdown from './Dropdown';
 import { SliderSection } from './SliderSection';
 import { SpecsState } from './App';
 import heic2any from 'heic2any';
@@ -7,6 +7,19 @@ import React from 'react';
 import { processVideoFrames } from './video/process-video';
 import { debounce, set, slice } from 'lodash';
 import { getAsciiFromGreyscale, getGreyscale, resizeImage } from './ascii-utils';
+
+export const ASCIICHARS = [
+    '8M0|*|::`,.',
+    'M80*|:,.` ',
+    '$H2a?+.   ',
+    '8+::`..',
+    '+-:`  ',
+    '▓▒▒░░ ',
+    '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
+    ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '],
+];
+
+const asciiOptions = ASCIICHARS.map((char) => ({ value: char, label: char }));
 
 interface MenuContainerProps {
     onAsciiChange: (ascii: string | string[]) => void;
@@ -108,7 +121,12 @@ const Menu = ({
                 contrast={contrast}
                 onContrastChange={onContrastChange}
             />
-            <PaletteDropdown selectedOption={palette} onOptionChange={onPaletteChange} />
+            <Dropdown
+                label="palette"
+                options={asciiOptions}
+                selectedOption={palette}
+                onOptionChange={onPaletteChange}
+            />
 
             <form>
                 <div className="checkboxes">

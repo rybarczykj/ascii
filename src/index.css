@@ -70,7 +70,7 @@ input[type='button'] {
 }
 .ascii {
     font-family: 'IBM Plex Mono';
-    color: red;
+    color: black;
     text-align: center;
     position: absolute;
     top: 50%;

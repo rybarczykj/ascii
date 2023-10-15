@@ -1,38 +1,24 @@
 import React from 'react';
 import CreatableSelect from 'react-select/creatable';
-import Creatable, { useCreatable } from 'react-select/creatable';
 
-export const ASCIICHARS = [
-    '8M0|*|::`,.',
-    'M80*|:,.` ',
-    '$H2a?+.   ',
-    '8+::`..',
-    '+-:`  ',
-    '▓▒▒░░ ',
-    '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
-    ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '],
-];
-
-const asciiOptions = ASCIICHARS.map((char) => ({ value: char, label: char }));
-
-interface PaletteDropdownProps {
+interface DropdownProps {
+    label: string;
+    options: {
+        value: string | string[];
+        label: string | string[];
+    }[];
     selectedOption: string | string[];
     onOptionChange: (option: string | string[]) => void;
 }
 
-const PaletteDropdown: React.FC<PaletteDropdownProps> = ({ selectedOption, onOptionChange }) => {
-    const handleOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const newOption = event.target.value;
-        onOptionChange(newOption);
-    };
-
+const Dropdown: React.FC<DropdownProps> = ({ label, options, selectedOption, onOptionChange }) => {
     return (
         <div className="menu-entry">
-            <label htmlFor="options">palette:</label>
+            <label htmlFor="options">{label}:</label>
             <CreatableSelect
-                options={asciiOptions}
+                options={options}
                 className="dropdown"
-                onChange={(option) => onOptionChange(option?.value || ASCIICHARS[0])}
+                onChange={(option) => onOptionChange(option?.value || options[0].value)}
                 styles={{
                     control: (baseStyles, state) => ({
                         ...baseStyles,
@@ -51,10 +37,10 @@ const PaletteDropdown: React.FC<PaletteDropdownProps> = ({ selectedOption, onOpt
                 }}
                 components={{ IndicatorSeparator: () => null }}
                 menuPosition="fixed"
-                value={asciiOptions.find((option) => option.value === selectedOption)}
+                value={options.find((option) => option.value === selectedOption)}
             />
         </div>
     );
 };
 
-export default PaletteDropdown;
+export default Dropdown;
