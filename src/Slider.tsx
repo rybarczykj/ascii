@@ -35,7 +35,7 @@ export const Slider: React.FC<SliderProps> = ({
                 step={step}
                 disabled={disabled}
             />
-            <output>{label}</output>
+            {/* <output>{label}</output> */}
         </div>
     );
 };
