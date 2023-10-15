@@ -69,7 +69,7 @@ input[type='button'] {
     flex-direction: column;
 }
 .ascii {
-    font-family: 'IBM Plex Mono';
+    font-family: 'monospace';
     color: black;
     text-align: center;
     position: absolute;

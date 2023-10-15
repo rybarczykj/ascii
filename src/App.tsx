@@ -5,7 +5,14 @@ import { AsciiVideo } from './video/asciiVideo';
 
 //rewrite as enum?
 
-export const Fonts = ['Ibm Plex Mono', 'Courier New', 'Monaco'];
+export const Fonts = [
+    'Ibm Plex Mono',
+    'Azeret Mono',
+    'Space Mono',
+    'Roboto Mono',
+    'Courier New',
+    'Monaco',
+];
 
 export type Font = (typeof Fonts)[number];
 
