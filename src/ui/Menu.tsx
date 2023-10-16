@@ -1,12 +1,13 @@
 import { ReactElement } from 'react';
-import Dropdown from './Dropdown';
-import { SliderSection } from './SliderSection';
-import { Font, Fonts, SpecsState } from './App';
+import Dropdown from '../Dropdown';
+import { SliderSection } from '../SliderSection';
+import { Font, Fonts, SpecsState } from '../App';
 import heic2any from 'heic2any';
 import React from 'react';
-import { processVideoFrames } from './video/process-video';
+import { processVideoFrames } from '../video/process-video';
 import { debounce, set, slice } from 'lodash';
-import { getAsciiFromGreyscale, getGreyscale, resizeImage } from './ascii-utils';
+import { getAsciiFromGreyscale, getGreyscale, resizeImage } from '../ascii-utils';
+import './menu.css';
 
 export const ASCIICHARS = [
     '8M0|*|::`,.',
@@ -39,6 +40,10 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     onColorInvertedToggle: () => void;
     contrast: number;
     onContrastChange: (contrast: number) => void;
+    textColor: string;
+    onTextColorChange: (color: string) => void;
+    backgroundColor: string;
+    onBackgroundColorChange: (color: string) => void;
 }
 
 const Menu = ({
@@ -54,6 +59,10 @@ const Menu = ({
     onColorInvertedToggle,
     contrast,
     onContrastChange,
+    textColor,
+    onTextColorChange,
+    backgroundColor,
+    onBackgroundColorChange,
 }: MenuProps): ReactElement => {
     return (
         <div className="menu">
@@ -138,15 +147,17 @@ const Menu = ({
             />
 
             <form>
-                <div className="checkboxes">
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={isColorInverted}
-                            onChange={onColorInvertedToggle}
-                        />
-                        {'inverse?'}
-                    </label>
+                <div className="menu-entry">
+                    <div className="checkboxes">
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={isColorInverted}
+                                onChange={onColorInvertedToggle}
+                            />
+                            {'inverse?'}
+                        </label>
+                    </div>
                 </div>
             </form>
 

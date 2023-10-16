@@ -1,6 +1,6 @@
 import './index.css';
 import React from 'react';
-import { MenuContainer as Menu } from './Menu';
+import { MenuContainer as Menu } from './ui/Menu';
 import { AsciiVideo } from './video/asciiVideo';
 
 //rewrite as enum?
