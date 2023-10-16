@@ -1,17 +1,10 @@
 .menu {
-    margin: 50px;
     margin-top: 20px;
     color: grey;
     width: 200px;
-    font-size: 12px;
-    text-align: center;
-    /* border: 1px solid grey; */
-    align-items: center;
-    border-radius: 5px;
-    /* border: 1px solid rgb(128, 128, 128); */
-    box-shadow: inset 0 5px 15px rgba(255, 255, 255, 0.5), 0 2px 3px rgba(0, 0, 0, 0.2),
-        0 5px 10px rgba(0, 0, 0, 0.1);
-    /* blue to white diagonal gradient */
+    font-size: 10px;
+    padding-left: 20px;
+    text-align: left;
 }
 
 .menu-entry {
@@ -28,6 +21,14 @@ input[type='file'] {
 input[type='button'] {
     position: absolute;
     left: -99999rem;
+}
+
+.slider {
+}
+
+.slider-track {
+    font-size: 18px;
+    color: blue;
 }
 
 /* buttons, like 'save to clipboard', and 'upload file' */
@@ -52,7 +53,6 @@ input[type='button'] {
 /* check boxes */
 .checkboxes label {
     display: block;
-    text-indent: -15px;
 }
 
 .checkboxes input {

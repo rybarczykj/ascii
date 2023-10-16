@@ -32,7 +32,7 @@ const Dropdown = <T,>({
                         height: '30px',
                         alignItems: 'baseline',
                         width: state.menuIsOpen ? '200px' : '100px',
-                        margin: '0px auto',
+
                         marginTop: '10px',
                     }),
                     dropdownIndicator: (baseStyles, state) => ({
