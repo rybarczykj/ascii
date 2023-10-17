@@ -1,13 +1,18 @@
 .menu {
     margin-top: 20px;
     color: grey;
-    width: 200px;
-    font-size: 10px;
+    width: 150px;
+    font-size: 12px;
     padding-left: 20px;
     text-align: left;
+    background-color: white;
 }
 
 .menu-entry {
+    padding-bottom: 20px;
+}
+
+.menu-entry-label {
     padding-top: 10px;
     padding-bottom: 10px;
 }
@@ -23,12 +28,50 @@ input[type='button'] {
     left: -99999rem;
 }
 
-.slider {
+.slider-asterix {
+    user-select: none;
+    height: 10px;
+    width: 10px;
+}
+.slider-asterix:hover {
+    color: cornflowerblue;
 }
 
 .slider-track {
-    font-size: 18px;
+    font-size: 15px;
     color: blue;
+    user-select: none;
+}
+
+.slider-input {
+    -webkit-appearance: none;
+    width: 80px;
+    background: transparent;
+    outline: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    position: absolute;
+    left: 25px;
+
+    margin-top: -2px;
+}
+
+.slider-input:hover {
+    /* opacity: 1; */
+}
+
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    background-color: blue;
+    cursor: grab;
+
+    margin-bottom: 10px;
 }
 
 /* buttons, like 'save to clipboard', and 'upload file' */

@@ -19,7 +19,7 @@ const Dropdown = <T,>({
 }: DropdownProps<T>): JSX.Element => {
     return (
         <div className="menu-entry">
-            <label htmlFor="options">{label}:</label>
+            <div className="menu-entry-label">{label}:</div>
             <CreatableSelect
                 options={options}
                 className="dropdown"
@@ -27,15 +27,17 @@ const Dropdown = <T,>({
                 styles={{
                     control: (baseStyles, state) => ({
                         ...baseStyles,
-                        minHeight: '10px !important',
-                        // maxHeight: '10px !important',
-                        height: '30px',
+                        minHeight: '5px !important',
                         alignItems: 'baseline',
                         width: state.menuIsOpen ? '200px' : '100px',
-
-                        marginTop: '10px',
+                        borderRadius: '2px',
+                        padding: '0px',
                     }),
                     dropdownIndicator: (baseStyles, state) => ({
+                        ...baseStyles,
+                        padding: '0px',
+                    }),
+                    input: (baseStyles, state) => ({
                         ...baseStyles,
                         padding: '0px',
                     }),
