@@ -14,8 +14,7 @@ export const SliderSection: React.FC<{
         <>
             <Slider
                 title={'zoom:'}
-                onChange={(event) => {
-                    const newZoom = parseFloat(event.target.value);
+                onChange={(newZoom) => {
                     onSpecsChange({ ...specs, zoom: newZoom });
                 }}
                 value={specs.zoom}
@@ -27,8 +26,7 @@ export const SliderSection: React.FC<{
 
             <Slider
                 title={'resolution:'}
-                onChange={(event) => {
-                    const resolution = parseFloat(event.target.value);
+                onChange={(resolution) => {
                     onResolutionChange(resolution);
                 }}
                 value={specs.resolution}
@@ -39,8 +37,7 @@ export const SliderSection: React.FC<{
 
             <Slider
                 title={'weight:'}
-                onChange={(event) => {
-                    const newWeight = parseFloat(event.target.value);
+                onChange={(newWeight) => {
                     onSpecsChange({ ...specs, weight: newWeight });
                 }}
                 value={specs.weight}
@@ -51,8 +48,7 @@ export const SliderSection: React.FC<{
 
             <Slider
                 title={'contrast:'}
-                onChange={(event) => {
-                    const newContrast = parseFloat(event.target.value);
+                onChange={(newContrast) => {
                     onContrastChange(newContrast);
                 }}
                 value={contrast}

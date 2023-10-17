@@ -40,10 +40,10 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     onColorInvertedToggle: () => void;
     contrast: number;
     onContrastChange: (contrast: number) => void;
-    textColor: string;
-    onTextColorChange: (color: string) => void;
-    backgroundColor: string;
-    onBackgroundColorChange: (color: string) => void;
+    // textColor: string;
+    // onTextColorChange: (color: string) => void;
+    // backgroundColor: string;
+    // onBackgroundColorChange: (color: string) => void;
 }
 
 const Menu = ({
@@ -59,11 +59,11 @@ const Menu = ({
     onColorInvertedToggle,
     contrast,
     onContrastChange,
-    textColor,
-    onTextColorChange,
-    backgroundColor,
-    onBackgroundColorChange,
-}: MenuProps): ReactElement => {
+}: // textColor,
+// onTextColorChange,
+// backgroundColor,
+// onBackgroundColorChange,
+MenuProps): ReactElement => {
     return (
         <div className="menu">
             <div className="menu-entry">
