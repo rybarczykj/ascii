@@ -53,9 +53,31 @@ export const SliderSection: React.FC<{
                 }}
                 value={contrast}
                 min={0.1}
-                max={10}
+                max={20}
                 step={0.1}
                 label={contrast.toString()}
+            />
+
+            <Slider
+                title={'kerning:'}
+                onChange={(newKerning) => {
+                    onSpecsChange({ ...specs, kerning: newKerning });
+                }}
+                value={specs.kerning}
+                min={-10}
+                max={10}
+                label={specs.kerning.toString()}
+            />
+            <Slider
+                title={'line height:'}
+                onChange={(newLineHeight) => {
+                    onSpecsChange({ ...specs, lineHeight: newLineHeight });
+                }}
+                value={specs.lineHeight}
+                min={0.1}
+                max={3}
+                step={0.1}
+                label={specs.lineHeight.toString()}
             />
         </>
     );

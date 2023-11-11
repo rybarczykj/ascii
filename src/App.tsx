@@ -23,6 +23,8 @@ export interface SpecsState {
     zoom: number;
     weight: number;
     fontFamily: Font;
+    kerning: number;
+    lineHeight: number;
 }
 
 const App: React.FC = () => {
@@ -34,6 +36,8 @@ const App: React.FC = () => {
         zoom: 1,
         weight: 400,
         fontFamily: 'Ibm Plex Mono',
+        kerning: 0,
+        lineHeight: 1,
     });
     console.log('specs', specs);
 
@@ -55,9 +59,10 @@ const App: React.FC = () => {
                     className="ascii"
                     style={{
                         fontSize: `${specs.zoom * 7}px`,
-                        lineHeight: 1,
+                        lineHeight: `${specs.lineHeight}em`,
                         fontWeight: specs.weight,
                         fontFamily: specs.fontFamily,
+                        letterSpacing: `${specs.kerning}px`,
                     }}>
                     {ascii !== '' ? (
                         typeof ascii === 'string' ? (
