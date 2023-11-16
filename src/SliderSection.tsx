@@ -10,6 +10,7 @@ export const SliderSection: React.FC<{
     contrast: number;
     onContrastChange: (contrast: number) => void;
 }> = ({ specs, onSpecsChange, onResolutionChange, contrast, onContrastChange }) => {
+    // TODO: consider using an exponential scale for resolution
     return (
         <>
             <Slider
@@ -68,17 +69,17 @@ export const SliderSection: React.FC<{
                 max={10}
                 label={specs.kerning.toString()}
             />
-            <Slider
+            {/* <Slider
                 title={'line height:'}
                 onChange={(newLineHeight) => {
                     onSpecsChange({ ...specs, lineHeight: newLineHeight });
                 }}
                 value={specs.lineHeight}
                 min={0.1}
-                max={3}
+                max={200}
                 step={0.1}
                 label={specs.lineHeight.toString()}
-            />
+            /> */}
         </>
     );
 };

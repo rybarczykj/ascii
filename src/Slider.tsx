@@ -23,6 +23,10 @@ export const Slider: React.FC<SliderProps> = ({
     disabled,
 }) => {
     const sliderLength = 10;
+    if (value > max || value < min) {
+        throw new Error(`value ${value} is outside of range ${min} to ${max}`);
+    }
+
     const normalizedValue = Math.floor(((value - min) / (max - min)) * sliderLength);
 
     const leftDashes = '-'.repeat(normalizedValue);
@@ -46,8 +50,8 @@ export const Slider: React.FC<SliderProps> = ({
                 <span className="slider-dashes">{leftDashes}</span>
                 <span className="slider-asterix">*</span>
                 <span className="slider-dashes">{rightDashes}</span>
-                {/* <output>{value}</output> */}
                 {`>`}
+                {/* <output>{value}</output> */}
             </div>
         </div>
     );

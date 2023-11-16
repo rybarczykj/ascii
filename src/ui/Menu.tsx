@@ -23,7 +23,7 @@ export const ASCIICHARS = [
 const asciiOptions = ASCIICHARS.map((char) => ({ value: char, label: char }));
 
 interface MenuContainerProps {
-    onAsciiChange: (ascii: string | string[]) => void;
+    onAsciiChange: (ascii: string | string[], resolution: number) => void;
     specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
     onCopy: () => void;
@@ -219,7 +219,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 palette,
                 resolution,
                 isColorInverted,
-                onAsciiChange,
+                (frames) => onAsciiChange(frames, resolution),
                 contrast,
             );
         } else {
@@ -247,16 +247,12 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     contrast,
                 );
 
-                onAsciiChange(newAscii);
+                onAsciiChange(newAscii, resolution);
             });
         }
     };
 
     const debouncedOnResolutionChange = debounce((resolution: number) => {
-        onSpecsChange({
-            ...specs,
-            resolution: resolution,
-        });
         updateAscii({
             palette: selectedPalette,
             isColorInverted,
@@ -266,7 +262,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             contrast,
             resetLookups: true,
         });
-    }, 10);
+    }, 5);
 
     return (
         <Menu

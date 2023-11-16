@@ -84,13 +84,13 @@ export const getAsciiFromGreyscale = (
     return ascii;
 };
 
-const resize = (image: HTMLImageElement, maxWidth: number, canvas: HTMLCanvasElement) => {
+const resize = (image: HTMLImageElement, maxHeight: number, canvas: HTMLCanvasElement) => {
     let width = image.width;
     let height = image.height;
 
-    if (width > maxWidth) {
-        height *= maxWidth / width;
-        width = maxWidth;
+    if (height > maxHeight) {
+        width *= maxHeight / height;
+        height = maxHeight;
     }
     // 0.6 because the ascii characters are taller than they are wide
     height *= 0.6;

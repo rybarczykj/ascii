@@ -41,7 +41,8 @@ const App: React.FC = () => {
     });
     console.log('specs', specs);
 
-    // TODO: why isn't the size of the video fixed anymore? and when did it break?
+    const lineHeight = 1000 / specs.resolution;
+
     return (
         <div className="flex-container">
             <Menu
@@ -58,8 +59,8 @@ const App: React.FC = () => {
                 <div
                     className="ascii"
                     style={{
-                        fontSize: `${specs.zoom * 7}px`,
-                        lineHeight: `${specs.lineHeight}em`,
+                        fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                        lineHeight: `${lineHeight * specs.zoom}px`,
                         fontWeight: specs.weight,
                         fontFamily: specs.fontFamily,
                         letterSpacing: `${specs.kerning}px`,
