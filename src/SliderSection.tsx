@@ -13,6 +13,17 @@ export const SliderSection: React.FC<{
     return (
         <>
             <Slider
+                title={'resolution:'}
+                onChange={(resolution) => {
+                    onResolutionChange(resolution);
+                }}
+                value={specs.resolution}
+                min={5}
+                max={500}
+                label={specs.resolution.toString().slice(0, 5)}
+            />
+
+            <Slider
                 title={'zoom:'}
                 onChange={(newZoom) => {
                     onSpecsChange({ ...specs, zoom: newZoom });
@@ -22,17 +33,6 @@ export const SliderSection: React.FC<{
                 max={10}
                 step={0.25}
                 label={specs.zoom.toString().slice(0, 4)}
-            />
-
-            <Slider
-                title={'resolution:'}
-                onChange={(resolution) => {
-                    onResolutionChange(resolution);
-                }}
-                value={specs.resolution}
-                min={5}
-                max={500}
-                label={specs.resolution.toString().slice(0, 5)}
             />
 
             <Slider
