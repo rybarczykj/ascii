@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
-import Dropdown from '../Dropdown';
-import { SliderSection } from '../SliderSection';
+import Dropdown from './Dropdown/Dropdown';
+import { SliderSection } from './SliderSection/SliderSection';
 import { Font, Fonts, SpecsState } from '../App';
 import heic2any from 'heic2any';
 import React from 'react';
