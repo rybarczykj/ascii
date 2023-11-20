@@ -8,7 +8,7 @@ export const DragDropFiles = ({
     children: React.ReactNode;
     onDrop: (file: File) => void;
 }): ReactElement => {
-    const onDropHandler = (e) => {
+    const onDropHandler = (e: any) => {
         e.preventDefault();
         e.stopPropagation();
         if (e.dataTransfer) {
@@ -17,7 +17,7 @@ export const DragDropFiles = ({
         }
     };
 
-    const onDragOverHandler = (e) => e.preventDefault();
+    const onDragOverHandler = (e: any) => e.preventDefault();
 
     return (
         <div onDrop={onDropHandler} onDragOver={onDragOverHandler}>
