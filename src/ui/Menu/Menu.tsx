@@ -17,6 +17,8 @@ export const ASCIICHARS = [
     '8+::`..',
     '+-:`  ',
     '▓▒▒░░ ',
+    '░▒▓▔▕▖▗▘▙▚▛▜▝▞▟ ',
+    '░▒▓█▄▀│┤╣║╚╔╗╝┐╩└╦╠┴═┬├╬─┼┘┌¦┼└┴┬├┐',
     '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
     ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '],
 ];
@@ -275,6 +277,18 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         });
     }, 5);
 
+    const debouncedOnContrastChange = debounce((contrast: number) => {
+        setContrast(contrast);
+        updateAscii({
+            palette: selectedPalette,
+            isColorInverted,
+            resolution: specs.resolution,
+            file: currentFile,
+            isVideo: isAsciiVideo,
+            contrast,
+        });
+    }, 5);
+
     return (
         <Menu
             {...props}
@@ -330,17 +344,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 });
             }}
             contrast={contrast}
-            onContrastChange={(contrast) => {
-                setContrast(contrast);
-                updateAscii({
-                    palette: selectedPalette,
-                    isColorInverted,
-                    resolution: specs.resolution,
-                    file: currentFile,
-                    isVideo: isAsciiVideo,
-                    contrast,
-                });
-            }}
+            onContrastChange={debouncedOnContrastChange}
         />
     );
 };

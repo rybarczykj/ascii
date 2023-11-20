@@ -54,7 +54,7 @@ export const SliderSection: React.FC<{
                 }}
                 value={contrast}
                 min={0.1}
-                max={20}
+                max={50}
                 step={0.1}
                 label={contrast.toString()}
             />
