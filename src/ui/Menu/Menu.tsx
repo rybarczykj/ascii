@@ -195,8 +195,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     // store greyscale so it can be a lookup table
     const greyscale = React.useRef<number[][]>([]);
 
-    console.log('selectedPalette', selectedPalette);
-
     const updateAscii = ({
         palette,
         isColorInverted,
@@ -217,7 +215,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         if (!file) {
             return;
         }
-        console.log('file', file);
+
         if (isVideo) {
             video.src = URL.createObjectURL(file);
 
@@ -255,6 +253,12 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 );
 
                 onAsciiChange(newAscii, resolution);
+                // TODO: this causes unnecessary state updates, but it makes the resolution change
+                // look smoothest. Maybe there's a better way to do this?
+                onSpecsChange({
+                    ...specs,
+                    resolution: resolution,
+                });
             });
         }
     };
