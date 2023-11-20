@@ -1,13 +1,14 @@
 import { ReactElement } from 'react';
-import Dropdown from './Dropdown/Dropdown';
-import { SliderSection } from './SliderSection/SliderSection';
-import { Font, Fonts, SpecsState } from '../App';
+import Dropdown from '../Dropdown/Dropdown';
+import { SliderSection } from '../SliderSection/SliderSection';
+import { Font, Fonts, SpecsState } from '../../App';
 import heic2any from 'heic2any';
 import React from 'react';
-import { processVideoFrames } from '../video/process-video';
+import { processVideoFrames } from '../../video/process-video';
 import { debounce, set, slice } from 'lodash';
-import { getAsciiFromGreyscale, getGreyscale, resizeImage } from '../ascii-utils';
+import { getAsciiFromGreyscale, getGreyscale, resizeImage } from '../../ascii-utils';
 import './menu.css';
+import { DragDropFiles } from './DragDropFiles';
 
 export const ASCIICHARS = [
     '8M0|*|::`,.',
@@ -64,113 +65,119 @@ const Menu = ({
 // backgroundColor,
 // onBackgroundColorChange,
 MenuProps): ReactElement => {
+    const imageUploadHandler = (imageFile: File) => {
+        if (imageFile.type === 'image/heic') {
+            // Convert HEIC image to JPEG format
+            try {
+                heic2any({
+                    blob: imageFile,
+                    toType: 'image/jpeg',
+                }).then((convertedBlob) => {
+                    const convertedFile = new File(
+                        [convertedBlob as Blob],
+                        imageFile.name.replace('.heic', '.jpg'),
+                        { type: 'image/jpeg' },
+                    );
+
+                    // Continue processing with the converted image
+                    onImageUpload(convertedFile);
+                });
+
+                // Create a new File instance with the converted blob
+            } catch (error) {
+                console.error('Error converting HEIC image:', error);
+            }
+        } else {
+            onImageUpload(imageFile);
+        }
+    };
+
     return (
-        <div className="menu">
-            <div className="menu-entry">
-                <label htmlFor="file-upload" className="clickable-button">
-                    Upload an image
-                </label>
-                <input
-                    id="file-upload"
-                    type="file"
-                    accept="image/*, .heic"
-                    onChange={(event) => {
-                        const myFile = event.target.files?.[0];
-                        if (!myFile) {
-                            return;
-                        }
-                        if (myFile.type === 'image/heic') {
-                            // Convert HEIC image to JPEG format
-                            try {
-                                heic2any({
-                                    blob: myFile,
-                                    toType: 'image/jpeg',
-                                }).then((convertedBlob) => {
-                                    const convertedFile = new File(
-                                        [convertedBlob as Blob],
-                                        myFile.name.replace('.heic', '.jpg'),
-                                        { type: 'image/jpeg' },
-                                    );
-
-                                    // Continue processing with the converted image
-                                    onImageUpload(convertedFile);
-                                });
-
-                                // Create a new File instance with the converted blob
-                            } catch (error) {
-                                console.error('Error converting HEIC image:', error);
-                            }
-                        } else {
-                            onImageUpload(myFile);
-                        }
-                    }}
-                />
-            </div>
-            <div className="menu-entry">
-                <label htmlFor="video-upload" className="clickable-button">
-                    Upload a video
-                </label>
-                <input
-                    id="video-upload"
-                    type="file"
-                    accept="video/*"
-                    onChange={(event) => {
-                        const videoFile = event.target.files?.[0];
-                        if (!videoFile) {
-                            return;
-                        }
-                        onVideoUpload(videoFile);
-                    }}
-                />
-            </div>
-            <SliderSection
-                specs={specs}
-                onSpecsChange={onSpecsChange}
-                onResolutionChange={onResolutionChange}
-                contrast={contrast}
-                onContrastChange={onContrastChange}
-            />
-            <Dropdown
-                label="palette"
-                options={asciiOptions}
-                selectedOption={palette}
-                onOptionChange={onPaletteChange}
-            />
-
-            <Dropdown
-                label="font"
-                options={Fonts.map((font: Font) => ({ value: font, label: font }))}
-                selectedOption={specs.fontFamily}
-                onOptionChange={(font) => {
-                    onSpecsChange({ ...specs, fontFamily: font as Font });
-                }}
-            />
-
-            <form>
+        <DragDropFiles onDrop={imageUploadHandler}>
+            <div className="menu">
                 <div className="menu-entry">
-                    <div className="checkboxes">
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={isColorInverted}
-                                onChange={onColorInvertedToggle}
-                            />
-                            {'inverse?'}
-                        </label>
-                    </div>
+                    <label htmlFor="file-upload" className="clickable-button">
+                        Upload an image
+                    </label>
+                    <input
+                        id="file-upload"
+                        type="file"
+                        accept="image/*, .heic"
+                        onChange={(event) => {
+                            const myFile = event.target.files?.[0];
+                            if (!myFile) {
+                                return;
+                            }
+                            imageUploadHandler(myFile);
+                        }}
+                    />
                 </div>
-            </form>
+                <div className="menu-entry">
+                    <label htmlFor="video-upload" className="clickable-button">
+                        Upload a video
+                    </label>
+                    <input
+                        id="video-upload"
+                        type="file"
+                        accept="video/*"
+                        onChange={(event) => {
+                            const videoFile = event.target.files?.[0];
+                            if (!videoFile) {
+                                return;
+                            }
+                            onVideoUpload(videoFile);
+                        }}
+                    />
+                </div>
+                <SliderSection
+                    specs={specs}
+                    onSpecsChange={onSpecsChange}
+                    onResolutionChange={onResolutionChange}
+                    contrast={contrast}
+                    onContrastChange={onContrastChange}
+                />
+                <Dropdown
+                    label="palette"
+                    options={asciiOptions}
+                    selectedOption={palette}
+                    onOptionChange={onPaletteChange}
+                />
 
-            <div className="menu-entry">
-                <label htmlFor="clipboard-button" className="clickable-button">
-                    Save to clipboard
-                </label>
+                <Dropdown
+                    label="font"
+                    options={Fonts.map((font: Font) => ({ value: font, label: font }))}
+                    selectedOption={specs.fontFamily}
+                    onOptionChange={(font) => {
+                        onSpecsChange({ ...specs, fontFamily: font as Font });
+                    }}
+                />
 
-                <button id="clipboard-button" className="hidden-button" onClick={onCopy}>
-                    {'save to clipboard'}
-                </button>
+                <form>
+                    <div className="menu-entry">
+                        <div className="checkboxes">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={isColorInverted}
+                                    onChange={onColorInvertedToggle}
+                                />
+                                {'inverse?'}
+                            </label>
+                        </div>
+                    </div>
+                </form>
+
+                <div className="menu-entry">
+                    <label htmlFor="clipboard-button" className="clickable-button">
+                        Save to clipboard
+                    </label>
+
+                    <button id="clipboard-button" className="hidden-button" onClick={onCopy}>
+                        {'save to clipboard'}
+                    </button>
+                </div>
             </div>
-        </div>
+        </DragDropFiles>
     );
 };
 
