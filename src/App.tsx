@@ -12,6 +12,8 @@ export const Fonts = [
     'Roboto Mono',
     'Courier New',
     'Monaco',
+    'Arial',
+    'Helvetica',
 ];
 
 export type Font = (typeof Fonts)[number];
