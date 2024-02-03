@@ -197,6 +197,12 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     // store greyscale so it can be a lookup table
     const greyscale = React.useRef<number[][]>([]);
 
+    const setLoadingStateIfVideo = (isVideo: boolean) => {
+        if (isVideo) {
+            onAsciiChange('loading...', specs.resolution);
+        }
+    };
+
     const updateAscii = ({
         palette,
         isColorInverted,
@@ -266,6 +272,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     };
 
     const debouncedOnResolutionChange = debounce((resolution: number) => {
+        setLoadingStateIfVideo(isAsciiVideo);
         updateAscii({
             palette: selectedPalette,
             isColorInverted,
@@ -278,6 +285,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     }, 5);
 
     const debouncedOnContrastChange = debounce((contrast: number) => {
+        setLoadingStateIfVideo(isAsciiVideo);
         setContrast(contrast);
         updateAscii({
             palette: selectedPalette,
@@ -308,6 +316,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             }}
             onVideoUpload={(videoFile) => {
                 setIsAsciiVideo(true);
+                setLoadingStateIfVideo(true);
                 updateAscii({
                     palette: selectedPalette,
                     isColorInverted,
@@ -322,6 +331,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             palette={selectedPalette}
             onPaletteChange={(newPalette) => {
                 setSelectedPalette(newPalette);
+                setLoadingStateIfVideo(isAsciiVideo);
                 updateAscii({
                     palette: newPalette,
                     isColorInverted,
@@ -334,6 +344,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             isColorInverted={isColorInverted}
             onColorInvertedToggle={() => {
                 setInvert(!isColorInverted);
+                setLoadingStateIfVideo(isAsciiVideo);
                 updateAscii({
                     palette: selectedPalette,
                     isColorInverted: !isColorInverted,
