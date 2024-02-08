@@ -31,6 +31,7 @@ code {
     min-width: 300px;
 
     padding: 40px;
+    z-index: -1;
 }
 
 /* large background text */

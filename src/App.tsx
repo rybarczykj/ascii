@@ -44,6 +44,7 @@ const App: React.FC = () => {
     console.log('specs', specs);
 
     const lineHeight = 1000 / specs.resolution;
+    console.log('ascii', ascii.slice(0, 100));
 
     return (
         <div className="flex-container">

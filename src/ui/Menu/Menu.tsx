@@ -4,7 +4,7 @@ import { SliderSection } from '../SliderSection/SliderSection';
 import { Font, Fonts, SpecsState } from '../../App';
 import heic2any from 'heic2any';
 import React from 'react';
-import { processVideoFrames } from '../../video/process-video';
+import { getFirstFrameOfVideoAsImageFile, processVideoFrames } from '../../video/process-video';
 import { debounce, set, slice } from 'lodash';
 import { getAsciiFromGreyscale, getGreyscale, resizeImage } from '../../ascii-utils';
 import './menu.css';
@@ -44,9 +44,12 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     contrast: number;
     onContrastChange: (contrast: number) => void;
     // textColor: string;
-    // onTextColorChange: (color: string) => void;
+    // onTextColorChange: (color: string) => void;`
     // backgroundColor: string;
     // onBackgroundColorChange: (color: string) => void;
+    isVideoEditMode: boolean;
+
+    onClickGenerateVideo: () => void;
 }
 
 const Menu = ({
@@ -62,6 +65,8 @@ const Menu = ({
     onColorInvertedToggle,
     contrast,
     onContrastChange,
+    isVideoEditMode,
+    onClickGenerateVideo,
 }: // textColor,
 // onTextColorChange,
 // backgroundColor,
@@ -96,88 +101,104 @@ MenuProps): ReactElement => {
 
     return (
         <DragDropFiles onDrop={imageUploadHandler}>
-            <div className="menu">
-                <div className="menu-entry">
-                    <label htmlFor="file-upload" className="clickable-button">
-                        Upload an image
-                    </label>
-                    <input
-                        id="file-upload"
-                        type="file"
-                        accept="image/*, .heic"
-                        onChange={(event) => {
-                            const myFile = event.target.files?.[0];
-                            if (!myFile) {
-                                return;
-                            }
-                            imageUploadHandler(myFile);
-                        }}
-                    />
-                </div>
-                <div className="menu-entry">
-                    <label htmlFor="video-upload" className="clickable-button">
-                        Upload a video
-                    </label>
-                    <input
-                        id="video-upload"
-                        type="file"
-                        accept="video/*"
-                        onChange={(event) => {
-                            const videoFile = event.target.files?.[0];
-                            if (!videoFile) {
-                                return;
-                            }
-                            onVideoUpload(videoFile);
-                        }}
-                    />
-                </div>
-                <SliderSection
-                    specs={specs}
-                    onSpecsChange={onSpecsChange}
-                    onResolutionChange={onResolutionChange}
-                    contrast={contrast}
-                    onContrastChange={onContrastChange}
-                />
-                <Dropdown
-                    label="palette"
-                    options={asciiOptions}
-                    selectedOption={palette}
-                    onOptionChange={onPaletteChange}
-                />
-
-                <Dropdown
-                    label="font"
-                    options={Fonts.map((font: Font) => ({ value: font, label: font }))}
-                    selectedOption={specs.fontFamily}
-                    onOptionChange={(font) => {
-                        onSpecsChange({ ...specs, fontFamily: font as Font });
-                    }}
-                />
-
-                <form>
+            <div className="flex-row">
+                <div className="menu">
                     <div className="menu-entry">
-                        <div className="checkboxes">
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    checked={isColorInverted}
-                                    onChange={onColorInvertedToggle}
-                                />
-                                {'inverse?'}
+                        <label htmlFor="file-upload" className="clickable-button">
+                            Upload an image
+                        </label>
+                        <input
+                            id="file-upload"
+                            type="file"
+                            accept="image/*, .heic"
+                            onChange={(event) => {
+                                const myFile = event.target.files?.[0];
+                                if (!myFile) {
+                                    return;
+                                }
+                                imageUploadHandler(myFile);
+                            }}
+                        />
+                    </div>
+                    <div className="menu-entry">
+                        <label htmlFor="video-upload" className="clickable-button">
+                            Upload a video
+                        </label>
+                        <input
+                            id="video-upload"
+                            type="file"
+                            accept="video/*"
+                            onChange={(event) => {
+                                const videoFile = event.target.files?.[0];
+                                if (!videoFile) {
+                                    return;
+                                }
+                                onVideoUpload(videoFile);
+                            }}
+                        />
+                    </div>
+                    <SliderSection
+                        specs={specs}
+                        onSpecsChange={onSpecsChange}
+                        onResolutionChange={onResolutionChange}
+                        contrast={contrast}
+                        onContrastChange={onContrastChange}
+                    />
+                    <Dropdown
+                        label="palette"
+                        options={asciiOptions}
+                        selectedOption={palette}
+                        onOptionChange={onPaletteChange}
+                    />
+                    <Dropdown
+                        label="font"
+                        options={Fonts.map((font: Font) => ({ value: font, label: font }))}
+                        selectedOption={specs.fontFamily}
+                        onOptionChange={(font) => {
+                            onSpecsChange({ ...specs, fontFamily: font as Font });
+                        }}
+                    />
+
+                    <form>
+                        <div className="menu-entry">
+                            <div className="checkboxes">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={isColorInverted}
+                                        onChange={onColorInvertedToggle}
+                                    />
+                                    {'inverse?'}
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div className="menu-entry">
+                        <label htmlFor="clipboard-button" className="clickable-button">
+                            Save to clipboard
+                        </label>
+
+                        <button id="clipboard-button" className="hidden-button" onClick={onCopy} />
+                    </div>
+                </div>
+                {isVideoEditMode && (
+                    <div className="info-box ">
+                        {
+                            "here's the first frame of the video. configure to your liking, then press the button to generate your result \n"
+                        }
+                        <div>
+                            <label htmlFor="generate-video-button" className={'clickable-button'}>
+                                Generate video
                             </label>
+                            <button
+                                id="generate-video-button"
+                                className="hidden-button"
+                                onClick={onClickGenerateVideo}></button>
+                            <span className="highlighted-element">!!</span>
                         </div>
                     </div>
-                </form>
-
-                <div className="menu-entry">
-                    <label htmlFor="clipboard-button" className="clickable-button">
-                        Save to clipboard
-                    </label>
-
-                    <button id="clipboard-button" className="hidden-button" onClick={onCopy}>
-                        {'save to clipboard'}
-                    </button>
-                </div>
+                )}
             </div>
         </DragDropFiles>
     );
@@ -191,13 +212,14 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     const [selectedPalette, setSelectedPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
     const [isColorInverted, setInvert] = React.useState(false);
     const [contrast, setContrast] = React.useState(1);
+    const [videoForEditMode, setVideoForEditMode] = React.useState<File>();
 
     const video = document.createElement('video');
 
     // store greyscale so it can be a lookup table
     const greyscale = React.useRef<number[][]>([]);
 
-    const setLoadingStateIfVideo = (isVideo: boolean) => {
+    const setLoadingState = (isVideo: boolean) => {
         if (isVideo) {
             onAsciiChange('loading...', specs.resolution);
         }
@@ -272,7 +294,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     };
 
     const debouncedOnResolutionChange = debounce((resolution: number) => {
-        setLoadingStateIfVideo(isAsciiVideo);
+        setLoadingState(isAsciiVideo);
         updateAscii({
             palette: selectedPalette,
             isColorInverted,
@@ -285,7 +307,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     }, 5);
 
     const debouncedOnContrastChange = debounce((contrast: number) => {
-        setLoadingStateIfVideo(isAsciiVideo);
+        setLoadingState(isAsciiVideo);
         setContrast(contrast);
         updateAscii({
             palette: selectedPalette,
@@ -297,6 +319,28 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         });
     }, 5);
 
+    const handleVideoUpload = (videoFile: File) => {
+        {
+            video.src = URL.createObjectURL(videoFile);
+            setVideoForEditMode(videoFile);
+
+            getFirstFrameOfVideoAsImageFile(video).then((imageFile) => {
+                if (!imageFile) {
+                    return;
+                }
+                updateAscii({
+                    palette: selectedPalette,
+                    isColorInverted,
+                    resolution: specs.resolution,
+                    file: imageFile,
+                    isVideo: false,
+                    contrast,
+                    resetLookups: true,
+                });
+                setCurrentFile(imageFile);
+            });
+        }
+    };
     return (
         <Menu
             {...props}
@@ -314,24 +358,11 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 });
                 setCurrentFile(imageFile);
             }}
-            onVideoUpload={(videoFile) => {
-                setIsAsciiVideo(true);
-                setLoadingStateIfVideo(true);
-                updateAscii({
-                    palette: selectedPalette,
-                    isColorInverted,
-                    resolution: specs.resolution,
-                    file: videoFile,
-                    isVideo: true,
-                    contrast,
-                    resetLookups: true,
-                });
-                setCurrentFile(videoFile);
-            }}
+            onVideoUpload={handleVideoUpload}
             palette={selectedPalette}
             onPaletteChange={(newPalette) => {
                 setSelectedPalette(newPalette);
-                setLoadingStateIfVideo(isAsciiVideo);
+                setLoadingState(isAsciiVideo);
                 updateAscii({
                     palette: newPalette,
                     isColorInverted,
@@ -344,7 +375,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             isColorInverted={isColorInverted}
             onColorInvertedToggle={() => {
                 setInvert(!isColorInverted);
-                setLoadingStateIfVideo(isAsciiVideo);
+                setLoadingState(isAsciiVideo);
                 updateAscii({
                     palette: selectedPalette,
                     isColorInverted: !isColorInverted,
@@ -356,6 +387,25 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             }}
             contrast={contrast}
             onContrastChange={debouncedOnContrastChange}
+            isVideoEditMode={Boolean(videoForEditMode)}
+            onClickGenerateVideo={() => {
+                if (videoForEditMode) {
+                    setIsAsciiVideo(true);
+                    setLoadingState(true);
+
+                    updateAscii({
+                        palette: selectedPalette,
+                        isColorInverted,
+                        resolution: specs.resolution,
+                        file: videoForEditMode,
+                        isVideo: true,
+                        contrast,
+                        resetLookups: true,
+                    });
+                    setCurrentFile(videoForEditMode);
+                    setVideoForEditMode(undefined);
+                }
+            }}
         />
     );
 };
