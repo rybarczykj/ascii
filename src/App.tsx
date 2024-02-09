@@ -75,7 +75,7 @@ const App: React.FC = () => {
                             <AsciiVideo asciiFrames={ascii} />
                         )
                     ) : (
-                        '{(-.-)/^'
+                        '((-.-)/^'
                     )}
                 </div>
             </pre>
