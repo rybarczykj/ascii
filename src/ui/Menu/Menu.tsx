@@ -323,6 +323,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         {
             video.src = URL.createObjectURL(videoFile);
             setVideoForEditMode(videoFile);
+            setIsAsciiVideo(false);
 
             getFirstFrameOfVideoAsImageFile(video).then((imageFile) => {
                 if (!imageFile) {
