@@ -25,6 +25,18 @@ export const SliderSection: React.FC<{
             />
 
             <Slider
+                title={'contrast:'}
+                onChange={(newContrast) => {
+                    onContrastChange(newContrast);
+                }}
+                value={contrast}
+                min={0.1}
+                max={50}
+                step={0.1}
+                label={contrast.toString()}
+            />
+
+            <Slider
                 title={'zoom:'}
                 onChange={(newZoom) => {
                     onSpecsChange({ ...specs, zoom: newZoom });
@@ -35,9 +47,8 @@ export const SliderSection: React.FC<{
                 step={0.25}
                 label={specs.zoom.toString().slice(0, 4)}
             />
-
             <Slider
-                title={'weight:'}
+                title={'font weight:'}
                 onChange={(newWeight) => {
                     onSpecsChange({ ...specs, weight: newWeight });
                 }}
@@ -45,18 +56,6 @@ export const SliderSection: React.FC<{
                 min={0}
                 max={800}
                 label={specs.weight.toString()}
-            />
-
-            <Slider
-                title={'contrast:'}
-                onChange={(newContrast) => {
-                    onContrastChange(newContrast);
-                }}
-                value={contrast}
-                min={0.1}
-                max={50}
-                step={0.1}
-                label={contrast.toString()}
             />
 
             <Slider
