@@ -1,7 +1,6 @@
 import { Slider } from '../Slider/Slider';
 import React from 'react';
 import { SpecsState } from '../../App';
-import { on } from 'events';
 
 export const SliderSection: React.FC<{
     specs: SpecsState;
@@ -9,7 +8,17 @@ export const SliderSection: React.FC<{
     onResolutionChange: (resolution: number) => void;
     contrast: number;
     onContrastChange: (contrast: number) => void;
-}> = ({ specs, onSpecsChange, onResolutionChange, contrast, onContrastChange }) => {
+    brightness: number; // Added brightness prop
+    onBrightnessChange: (brightness: number) => void; // Added onBrightnessChange prop
+}> = ({
+    specs,
+    onSpecsChange,
+    onResolutionChange,
+    contrast,
+    onContrastChange,
+    brightness,
+    onBrightnessChange,
+}) => {
     // TODO: consider using an exponential scale for resolution
     return (
         <>
@@ -34,6 +43,18 @@ export const SliderSection: React.FC<{
                 max={50}
                 step={0.1}
                 label={contrast.toString()}
+            />
+
+            <Slider
+                title={'brightness:'}
+                onChange={(newBrightness) => {
+                    onBrightnessChange(newBrightness);
+                }}
+                value={brightness}
+                min={-255}
+                max={255}
+                step={1}
+                label={brightness.toString()}
             />
 
             <Slider

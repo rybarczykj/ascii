@@ -26,11 +26,12 @@ export const getAsciiFromContext = (
     context: CanvasRenderingContext2D,
     asciiChars: string | string[],
     inverse = false,
-    contrast?: number,
+    contrast: number,
+    brightness: number,
 ): string => {
     const imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
     const greyscale = getGreyscale(imageData);
-    const ascii = getAsciiFromGreyscale(greyscale, asciiChars, inverse, contrast);
+    const ascii = getAsciiFromGreyscale(greyscale, asciiChars, inverse, contrast, brightness);
     return ascii;
 };
 
@@ -59,18 +60,22 @@ export const getAsciiFromGreyscale = (
     greyscale: number[][],
     asciiChars: string | string[],
     inverse = false,
-    contrast?: number,
+    contrast: number,
+    brightness: number,
 ): string => {
     let ascii = '';
-
     // iterate over each row, and each pixel in the row
     for (let y = 0; y < greyscale.length; y++) {
         for (let x = 0; x < greyscale[y].length; x++) {
             const luminance = greyscale[y][x];
 
-            const contrastedLuminance = contrast
-                ? Math.max(Math.min((luminance - 127.5) * contrast, 255), 0)
+            const adjustedLuminance = brightness
+                ? Math.max(Math.min(luminance + brightness, 255), 0)
                 : luminance;
+
+            const contrastedLuminance = contrast
+                ? Math.max(Math.min((adjustedLuminance - 127.5) * contrast, 255), 0)
+                : adjustedLuminance;
 
             const asciiIndex = Math.floor((contrastedLuminance / 255) * (asciiChars.length - 1));
             if (inverse) {

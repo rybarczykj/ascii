@@ -43,6 +43,8 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     onColorInvertedToggle: () => void;
     contrast: number;
     onContrastChange: (contrast: number) => void;
+    brightness: number;
+    onBrightnessChange: (brightness: number) => void;
     // textColor: string;
     // onTextColorChange: (color: string) => void;`
     // backgroundColor: string;
@@ -67,6 +69,8 @@ const Menu = ({
     onContrastChange,
     isVideoEditMode,
     onClickGenerateVideo,
+    brightness,
+    onBrightnessChange,
 }: // textColor,
 // onTextColorChange,
 // backgroundColor,
@@ -143,6 +147,8 @@ MenuProps): ReactElement => {
                         onResolutionChange={onResolutionChange}
                         contrast={contrast}
                         onContrastChange={onContrastChange}
+                        brightness={brightness}
+                        onBrightnessChange={onBrightnessChange}
                     />
                     <Dropdown
                         label="palette"
@@ -212,6 +218,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     const [selectedPalette, setSelectedPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
     const [isColorInverted, setInvert] = React.useState(false);
     const [contrast, setContrast] = React.useState(1);
+    const [brightness, setBrightness] = React.useState(0);
     const [videoForEditMode, setVideoForEditMode] = React.useState<File>();
 
     const video = document.createElement('video');
@@ -232,7 +239,8 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         file,
         isVideo,
         contrast,
-        resetLookups = false,
+        brightness,
+        resetLookups,
     }: {
         palette: string | string[];
         isColorInverted: boolean;
@@ -240,7 +248,8 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         file: File | undefined;
         isVideo: boolean;
         contrast: number;
-        resetLookups?: boolean;
+        brightness: number;
+        resetLookups: boolean;
     }) => {
         if (!file) {
             return;
@@ -256,6 +265,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 isColorInverted,
                 (frames) => onAsciiChange(frames, resolution),
                 contrast,
+                brightness,
             );
         } else {
             resizeImage({
@@ -280,6 +290,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     palette,
                     isColorInverted,
                     contrast,
+                    brightness,
                 );
 
                 onAsciiChange(newAscii, resolution);
@@ -302,6 +313,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             file: currentFile,
             isVideo: isAsciiVideo,
             contrast,
+            brightness,
             resetLookups: true,
         });
     }, 5);
@@ -316,6 +328,23 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             file: currentFile,
             isVideo: isAsciiVideo,
             contrast,
+            brightness,
+            resetLookups: false,
+        });
+    }, 5);
+
+    const debouncedOnBrightnessChange = debounce((brightness: number) => {
+        setLoadingState(isAsciiVideo);
+        setBrightness(brightness);
+        updateAscii({
+            palette: selectedPalette,
+            isColorInverted,
+            resolution: specs.resolution,
+            file: currentFile,
+            isVideo: isAsciiVideo,
+            contrast,
+            brightness,
+            resetLookups: false,
         });
     }, 5);
 
@@ -336,6 +365,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     file: imageFile,
                     isVideo: false,
                     contrast,
+                    brightness,
                     resetLookups: true,
                 });
                 setCurrentFile(imageFile);
@@ -355,6 +385,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     file: imageFile,
                     isVideo: false,
                     contrast,
+                    brightness,
                     resetLookups: true,
                 });
                 setCurrentFile(imageFile);
@@ -370,7 +401,9 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     resolution: specs.resolution,
                     file: currentFile,
                     isVideo: isAsciiVideo,
+                    brightness,
                     contrast,
+                    resetLookups: false,
                 });
             }}
             isColorInverted={isColorInverted}
@@ -383,11 +416,15 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     resolution: specs.resolution,
                     file: currentFile,
                     isVideo: isAsciiVideo,
+                    brightness,
                     contrast,
+                    resetLookups: false,
                 });
             }}
             contrast={contrast}
             onContrastChange={debouncedOnContrastChange}
+            brightness={brightness}
+            onBrightnessChange={debouncedOnBrightnessChange}
             isVideoEditMode={Boolean(videoForEditMode)}
             onClickGenerateVideo={() => {
                 if (videoForEditMode) {
@@ -401,6 +438,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                         file: videoForEditMode,
                         isVideo: true,
                         contrast,
+                        brightness,
                         resetLookups: true,
                     });
                     setCurrentFile(videoForEditMode);
