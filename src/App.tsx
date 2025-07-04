@@ -193,10 +193,6 @@ const App: React.FC = () => {
                 onBrightnessChange={setBrightness}
                 useColors={useColors}
                 onUseColorsToggle={() => setUseColors(v => !v)}
-                isVideoEditMode={false} // No more edit mode
-                onClickGenerateVideo={() => {
-                    // No-op - streaming mode doesn't need this
-                }}
             />
 
             {/* Hidden video element for streaming */}

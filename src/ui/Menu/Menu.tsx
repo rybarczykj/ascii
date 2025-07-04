@@ -4,8 +4,8 @@ import { SliderSection } from '../SliderSection/SliderSection';
 import { Font, Fonts, SpecsState } from '../../App';
 import heic2any from 'heic2any';
 import React from 'react';
-import { getFirstFrameOfVideoAsImageFile, processVideoFrames } from '../../video/process-video';
-import { debounce, set, slice } from 'lodash';
+
+import { debounce } from 'lodash';
 import { getAsciiFromGreyscale, getGreyscale, resizeImage, getColors, getColoredAsciiFromGreyscale } from '../../ascii-utils';
 import './menu.css';
 import { DragDropFiles } from './DragDropFiles';
@@ -46,8 +46,6 @@ interface MenuContainerProps {
     onBrightnessChange: (brightness: number) => void;
     useColors: boolean;
     onUseColorsToggle: () => void;
-    isVideoEditMode: boolean;
-    onClickGenerateVideo: () => void;
 }
 
 // extend MenuContainerProps
@@ -67,11 +65,8 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     // onTextColorChange: (color: string) => void;`
     // backgroundColor: string;
     // onBackgroundColorChange: (color: string) => void;
-    isVideoEditMode: boolean;
     useColors: boolean;
     onUseColorsToggle: () => void;
-
-    onClickGenerateVideo: () => void;
 }
 
 const Menu = ({
@@ -87,8 +82,6 @@ const Menu = ({
     onColorInvertedToggle,
     contrast,
     onContrastChange,
-    isVideoEditMode,
-    onClickGenerateVideo,
     brightness,
     onBrightnessChange,
     useColors,
@@ -228,26 +221,19 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
 
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [isAsciiVideo, setIsAsciiVideo] = React.useState(false);
-    const [videoForEditMode, setVideoForEditMode] = React.useState<File>();
 
-    const video = document.createElement('video');
-
-    // store greyscale so it can be a lookup table
+    // store greyscale so it can be a lookup table (only for images)
     const greyscale = React.useRef<number[][]>([]);
     const colors = React.useRef<string[][]>([]);
 
-    const setLoadingState = (isVideo: boolean) => {
-        if (isVideo) {
-            onAsciiChange('loading...', specs.resolution);
-        }
-    };
 
+
+    // Simplified updateAscii function - only handles images now
     const updateAscii = ({
         palette,
         isColorInverted,
         resolution,
         file,
-        isVideo,
         contrast,
         brightness,
         resetLookups,
@@ -257,7 +243,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         isColorInverted: boolean;
         resolution: number;
         file: File | undefined;
-        isVideo: boolean;
         contrast: number;
         brightness: number;
         resetLookups: boolean;
@@ -267,118 +252,117 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             return;
         }
 
-        if (isVideo) {
-            video.src = URL.createObjectURL(file);
-
-            processVideoFrames(
-                video,
-                palette,
-                resolution,
-                isColorInverted,
-                (frames) => onAsciiChange(frames, resolution),
-                contrast,
-                brightness,
-                useColors,
-            );
-        } else {
-            resizeImage({
-                file: file,
-                maxWidth: resolution,
-            }).then((canvas) => {
-                const context = canvas.getContext('2d', {
-                    willReadFrequently: true,
-                });
-                const data = context?.getImageData(0, 0, canvas.width, canvas.height);
-                if (!data) {
-                    return;
-                }
-
-                // avoid recalculating greyscale for each frame
-                if (resetLookups) {
-                    greyscale.current = getGreyscale(data);
-                    colors.current = getColors(data);
-                }
-
-                if (useColors) {
-                    const coloredAscii = getColoredAsciiFromGreyscale(
-                        greyscale.current,
-                        colors.current,
-                        palette,
-                        isColorInverted,
-                        contrast,
-                        brightness,
-                    );
-                    onAsciiChange(coloredAscii.ascii, resolution, coloredAscii.colors);
-                } else {
-                    const newAscii = getAsciiFromGreyscale(
-                        greyscale.current,
-                        palette,
-                        isColorInverted,
-                        contrast,
-                        brightness,
-                    );
-                    onAsciiChange(newAscii, resolution);
-                }
-
-                // TODO: this causes unnecessary state updates, but it makes the resolution change
-                // look smoothest. Maybe there's a better way to do this?
-                onSpecsChange({
-                    ...specs,
-                    resolution: resolution,
-                });
+        resizeImage({
+            file: file,
+            maxWidth: resolution,
+        }).then((canvas) => {
+            const context = canvas.getContext('2d', {
+                willReadFrequently: true,
             });
-        }
+            const data = context?.getImageData(0, 0, canvas.width, canvas.height);
+            if (!data) {
+                return;
+            }
+
+            // avoid recalculating greyscale for each frame
+            if (resetLookups) {
+                greyscale.current = getGreyscale(data);
+                colors.current = getColors(data);
+            }
+
+            if (useColors) {
+                const coloredAscii = getColoredAsciiFromGreyscale(
+                    greyscale.current,
+                    colors.current,
+                    palette,
+                    isColorInverted,
+                    contrast,
+                    brightness,
+                );
+                onAsciiChange(coloredAscii.ascii, resolution, coloredAscii.colors);
+            } else {
+                const newAscii = getAsciiFromGreyscale(
+                    greyscale.current,
+                    palette,
+                    isColorInverted,
+                    contrast,
+                    brightness,
+                );
+                onAsciiChange(newAscii, resolution);
+            }
+
+            onSpecsChange({
+                ...specs,
+                resolution: resolution,
+            });
+        });
     };
 
     const debouncedOnResolutionChange = debounce((resolution: number) => {
-        setLoadingState(isAsciiVideo);
-        updateAscii({
-            palette: props.palette,
-            isColorInverted: props.isColorInverted,
-            resolution,
-            file: currentFile,
-            isVideo: isAsciiVideo,
-            contrast: props.contrast,
-            brightness: props.brightness,
-            resetLookups: true,
-            useColors: props.useColors,
-        });
+        // For video mode, just update the specs directly since we're using streaming
+        if (isAsciiVideo) {
+            props.onSpecsChange({
+                ...props.specs,
+                resolution: resolution,
+            });
+        } else {
+            updateAscii({
+                palette: props.palette,
+                isColorInverted: props.isColorInverted,
+                resolution,
+                file: currentFile,
+                contrast: props.contrast,
+                brightness: props.brightness,
+                resetLookups: true,
+                useColors: props.useColors,
+            });
+        }
     }, 5);
 
     const debouncedOnContrastChange = debounce((contrast: number) => {
-        setLoadingState(isAsciiVideo);
-        updateAscii({
-            palette: props.palette,
-            isColorInverted: props.isColorInverted,
-            resolution: specs.resolution,
-            file: currentFile,
-            isVideo: isAsciiVideo,
-            contrast,
-            brightness: props.brightness,
-            resetLookups: false,
-            useColors: props.useColors,
-        });
+        // For video mode, just update the contrast directly since we're using streaming
+        if (isAsciiVideo) {
+            props.onContrastChange(contrast);
+        } else {
+            updateAscii({
+                palette: props.palette,
+                isColorInverted: props.isColorInverted,
+                resolution: specs.resolution,
+                file: currentFile,
+                contrast,
+                brightness: props.brightness,
+                resetLookups: false,
+                useColors: props.useColors,
+            });
+        }
     }, 5);
 
     const debouncedOnBrightnessChange = debounce((brightness: number) => {
-        setLoadingState(isAsciiVideo);
-        updateAscii({
-            palette: props.palette,
-            isColorInverted: props.isColorInverted,
-            resolution: specs.resolution,
-            file: currentFile,
-            isVideo: isAsciiVideo,
-            contrast: props.contrast,
-            brightness,
-            resetLookups: false,
-            useColors: props.useColors,
-        });
+        // For video mode, just update the brightness directly since we're using streaming
+        if (isAsciiVideo) {
+            props.onBrightnessChange(brightness);
+        } else {
+            updateAscii({
+                palette: props.palette,
+                isColorInverted: props.isColorInverted,
+                resolution: specs.resolution,
+                file: currentFile,
+                contrast: props.contrast,
+                brightness,
+                resetLookups: false,
+                useColors: props.useColors,
+            });
+        }
     }, 5);
 
     const handleVideoUpload = (videoFile: File) => {
         // Use the new streaming approach by calling the prop directly
         props.onVideoUpload(videoFile);
+        // Set the local state to indicate we're in video mode
+        setIsAsciiVideo(true);
+        setCurrentFile(videoFile);
     };
+
     return (
         <Menu
             {...props}
@@ -390,7 +374,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     isColorInverted: props.isColorInverted,
                     resolution: specs.resolution,
                     file: imageFile,
-                    isVideo: false,
                     contrast: props.contrast,
                     brightness: props.brightness,
                     resetLookups: true,
@@ -402,80 +385,66 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             palette={props.palette}
             onPaletteChange={(newPalette) => {
                 props.onPaletteChange(newPalette);
-                setLoadingState(isAsciiVideo);
-                updateAscii({
-                    palette: newPalette,
-                    isColorInverted: props.isColorInverted,
-                    resolution: specs.resolution,
-                    file: currentFile,
-                    isVideo: isAsciiVideo,
-                    brightness: props.brightness,
-                    contrast: props.contrast,
-                    resetLookups: false,
-                    useColors: props.useColors,
-                });
+                // For video mode, just update the palette directly since we're using streaming
+                if (!isAsciiVideo) {
+                    updateAscii({
+                        palette: newPalette,
+                        isColorInverted: props.isColorInverted,
+                        resolution: specs.resolution,
+                        file: currentFile,
+                        brightness: props.brightness,
+                        contrast: props.contrast,
+                        resetLookups: false,
+                        useColors: props.useColors,
+                    });
+                }
             }}
             isColorInverted={props.isColorInverted}
             onColorInvertedToggle={() => {
                 props.onColorInvertedToggle();
-                setLoadingState(isAsciiVideo);
-                updateAscii({
-                    palette: props.palette,
-                    isColorInverted: !props.isColorInverted,
-                    resolution: specs.resolution,
-                    file: currentFile,
-                    isVideo: isAsciiVideo,
-                    brightness: props.brightness,
-                    contrast: props.contrast,
-                    resetLookups: false,
-                    useColors: props.useColors,
-                });
+                // For video mode, just update the color inversion directly since we're using streaming
+                if (!isAsciiVideo) {
+                    updateAscii({
+                        palette: props.palette,
+                        isColorInverted: !props.isColorInverted,
+                        resolution: specs.resolution,
+                        file: currentFile,
+                        brightness: props.brightness,
+                        contrast: props.contrast,
+                        resetLookups: false,
+                        useColors: props.useColors,
+                    });
+                }
             }}
             contrast={props.contrast}
             onContrastChange={(contrast) => {
                 props.onContrastChange(contrast);
+                // For video mode, the debounced function will handle it directly
+                // For image mode, it will process through updateAscii
                 debouncedOnContrastChange(contrast);
             }}
             brightness={props.brightness}
             onBrightnessChange={(brightness) => {
                 props.onBrightnessChange(brightness);
+                // For video mode, the debounced function will handle it directly
+                // For image mode, it will process through updateAscii
                 debouncedOnBrightnessChange(brightness);
             }}
-            isVideoEditMode={Boolean(videoForEditMode)}
             useColors={props.useColors}
             onUseColorsToggle={() => {
                 props.onUseColorsToggle();
-                setLoadingState(isAsciiVideo);
-                updateAscii({
-                    palette: props.palette,
-                    isColorInverted: props.isColorInverted,
-                    resolution: specs.resolution,
-                    file: currentFile,
-                    isVideo: isAsciiVideo,
-                    brightness: props.brightness,
-                    contrast: props.contrast,
-                    resetLookups: false,
-                    useColors: !props.useColors,
-                });
-            }}
-            onClickGenerateVideo={() => {
-                if (videoForEditMode) {
-                    setIsAsciiVideo(true);
-                    setLoadingState(true);
-
+                // For video mode, just update the use colors setting directly since we're using streaming
+                if (!isAsciiVideo) {
                     updateAscii({
                         palette: props.palette,
                         isColorInverted: props.isColorInverted,
                         resolution: specs.resolution,
-                        file: videoForEditMode,
-                        isVideo: true,
-                        contrast: props.contrast,
+                        file: currentFile,
                         brightness: props.brightness,
-                        resetLookups: true,
-                        useColors: props.useColors,
+                        contrast: props.contrast,
+                        resetLookups: false,
+                        useColors: !props.useColors,
                     });
-                    setCurrentFile(videoForEditMode);
-                    setVideoForEditMode(undefined);
                 }
             }}
         />

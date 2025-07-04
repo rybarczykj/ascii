@@ -63,6 +63,10 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
     aspectRatioMultiplier = 0.6,
 }) => {
 
+    React.useEffect(() => {
+        console.log('asciiResolution', asciiResolution);
+    }, [asciiResolution]);
+
     const [currentFrame, setCurrentFrame] = React.useState<string | { ascii: string; colors: string[] } | null>(null);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
