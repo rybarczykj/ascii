@@ -119,6 +119,7 @@ input[type='button'] {
 /* check boxes */
 .checkboxes label {
     display: block;
+    padding-top: 5px;
 }
 
 .checkboxes input {

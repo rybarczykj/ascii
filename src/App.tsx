@@ -29,8 +29,45 @@ export interface SpecsState {
     lineHeight: number;
 }
 
+interface ColoredAsciiProps {
+    ascii: string;
+    colors: string[];
+    style: React.CSSProperties;
+}
+
+const ColoredAscii: React.FC<ColoredAsciiProps> = ({ ascii, colors, style }) => {
+    const lines = ascii.split('\n');
+    let colorIndex = 0;
+
+    return (
+        <div className="ascii" style={style}>
+            {lines.map((line, lineIndex) => (
+                <div key={lineIndex}>
+                    {line.split('').map((char, charIndex) => {
+                        // Find the next non-empty color (skip newline placeholders)
+                        let color = 'inherit';
+                        while (colorIndex < colors.length && colors[colorIndex] === '') {
+                            colorIndex++;
+                        }
+                        if (colorIndex < colors.length) {
+                            color = colors[colorIndex];
+                            colorIndex++;
+                        }
+                        return (
+                            <span key={charIndex} style={{ color }}>
+                                {char}
+                            </span>
+                        );
+                    })}
+                </div>
+            ))}
+        </div>
+    );
+};
+
 const App: React.FC = () => {
     const [ascii, setAscii] = React.useState<string | string[]>('');
+    const [asciiColors, setAsciiColors] = React.useState<string[]>([]);
     const [specs, setSpecs] = React.useState<SpecsState>({
         fontSize: 30,
         resolution: 100,
@@ -41,17 +78,26 @@ const App: React.FC = () => {
         kerning: 0,
         lineHeight: 1,
     });
-    console.log('specs', specs);
+
 
     const lineHeight = 1000 / specs.resolution;
-    console.log('ascii', ascii.slice(0, 100));
+
+    const handleAsciiChange = (asciiData: string | string[], resolution: number, colors?: string[]) => {
+        if (typeof asciiData === 'string') {
+            setAscii(asciiData);
+            setAsciiColors(colors || []);
+        } else {
+            setAscii(asciiData);
+            setAsciiColors([]);
+        }
+    };
 
     return (
         <div className="flex-container">
             <Menu
                 specs={specs}
                 onSpecsChange={(specs: SpecsState) => setSpecs(specs)}
-                onAsciiChange={(ascii: string | string[]) => setAscii(ascii)}
+                onAsciiChange={handleAsciiChange}
                 onCopy={() => {
                     navigator.clipboard.writeText(
                         typeof ascii === 'string' ? ascii : JSON.stringify(ascii),
@@ -59,25 +105,59 @@ const App: React.FC = () => {
                 }}
             />
             <pre>
-                <div
-                    className="ascii"
-                    style={{
-                        fontSize: `${lineHeight * 1 * specs.zoom}px`,
-                        lineHeight: `${lineHeight * specs.zoom}px`,
-                        fontWeight: specs.weight,
-                        fontFamily: specs.fontFamily,
-                        letterSpacing: `${specs.kerning}px`,
-                    }}>
-                    {ascii !== '' ? (
-                        typeof ascii === 'string' ? (
-                            ascii
+                {ascii !== '' ? (
+                    typeof ascii === 'string' ? (
+                        asciiColors.length > 0 ? (
+                            <ColoredAscii
+                                ascii={ascii}
+                                colors={asciiColors}
+                                style={{
+                                    fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                                    lineHeight: `${lineHeight * specs.zoom}px`,
+                                    fontWeight: specs.weight,
+                                    fontFamily: specs.fontFamily,
+                                    letterSpacing: `${specs.kerning}px`,
+                                }}
+                            />
                         ) : (
-                            <AsciiVideo asciiFrames={ascii} />
+                            <div
+                                className="ascii"
+                                style={{
+                                    fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                                    lineHeight: `${lineHeight * specs.zoom}px`,
+                                    fontWeight: specs.weight,
+                                    fontFamily: specs.fontFamily,
+                                    letterSpacing: `${specs.kerning}px`,
+                                }}>
+                                {ascii}
+                            </div>
                         )
                     ) : (
-                        '((-.-)/^'
-                    )}
-                </div>
+                        <div
+                            className="ascii"
+                            style={{
+                                fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                                lineHeight: `${lineHeight * specs.zoom}px`,
+                                fontWeight: specs.weight,
+                                fontFamily: specs.fontFamily,
+                                letterSpacing: `${specs.kerning}px`,
+                            }}>
+                            <AsciiVideo asciiFrames={ascii} />
+                        </div>
+                    )
+                ) : (
+                    <div
+                        className="ascii"
+                        style={{
+                            fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                            lineHeight: `${lineHeight * specs.zoom}px`,
+                            fontWeight: specs.weight,
+                            fontFamily: specs.fontFamily,
+                            letterSpacing: `${specs.kerning}px`,
+                        }}>
+                        &apos;((-.-)/^&apos;
+                    </div>
+                )}
             </pre>
         </div>
     );

@@ -6,7 +6,7 @@ import heic2any from 'heic2any';
 import React from 'react';
 import { getFirstFrameOfVideoAsImageFile, processVideoFrames } from '../../video/process-video';
 import { debounce, set, slice } from 'lodash';
-import { getAsciiFromGreyscale, getGreyscale, resizeImage } from '../../ascii-utils';
+import { getAsciiFromGreyscale, getGreyscale, resizeImage, getColors, getColoredAsciiFromGreyscale } from '../../ascii-utils';
 import './menu.css';
 import { DragDropFiles } from './DragDropFiles';
 
@@ -30,7 +30,7 @@ export const ASCIICHARS = [
 const asciiOptions = ASCIICHARS.map((char) => ({ value: char, label: char }));
 
 interface MenuContainerProps {
-    onAsciiChange: (ascii: string | string[], resolution: number) => void;
+    onAsciiChange: (ascii: string | string[], resolution: number, colors?: string[]) => void;
     specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
     onCopy: () => void;
@@ -54,6 +54,8 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     // backgroundColor: string;
     // onBackgroundColorChange: (color: string) => void;
     isVideoEditMode: boolean;
+    useColors: boolean;
+    onUseColorsToggle: () => void;
 
     onClickGenerateVideo: () => void;
 }
@@ -75,6 +77,8 @@ const Menu = ({
     onClickGenerateVideo,
     brightness,
     onBrightnessChange,
+    useColors,
+    onUseColorsToggle,
 }: // textColor,
     // onTextColorChange,
     // backgroundColor,
@@ -180,6 +184,14 @@ const Menu = ({
                                     />
                                     {'inverse?'}
                                 </label>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={useColors}
+                                        onChange={onUseColorsToggle}
+                                    />
+                                    {'use colors?'}
+                                </label>
                             </div>
                         </div>
                     </form>
@@ -221,6 +233,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     const [isAsciiVideo, setIsAsciiVideo] = React.useState(false);
     const [selectedPalette, setSelectedPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
     const [isColorInverted, setInvert] = React.useState(false);
+    const [useColors, setUseColors] = React.useState(false);
     const [contrast, setContrast] = React.useState(1);
     const [brightness, setBrightness] = React.useState(0);
     const [videoForEditMode, setVideoForEditMode] = React.useState<File>();
@@ -229,6 +242,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
 
     // store greyscale so it can be a lookup table
     const greyscale = React.useRef<number[][]>([]);
+    const colors = React.useRef<string[][]>([]);
 
     const setLoadingState = (isVideo: boolean) => {
         if (isVideo) {
@@ -245,6 +259,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         contrast,
         brightness,
         resetLookups,
+        useColors,
     }: {
         palette: string | string[];
         isColorInverted: boolean;
@@ -254,6 +269,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         contrast: number;
         brightness: number;
         resetLookups: boolean;
+        useColors: boolean;
     }) => {
         if (!file) {
             return;
@@ -287,17 +303,30 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 // avoid recalculating greyscale for each frame
                 if (resetLookups) {
                     greyscale.current = getGreyscale(data);
+                    colors.current = getColors(data);
                 }
 
-                const newAscii = getAsciiFromGreyscale(
-                    greyscale.current,
-                    palette,
-                    isColorInverted,
-                    contrast,
-                    brightness,
-                );
+                if (useColors) {
+                    const coloredAscii = getColoredAsciiFromGreyscale(
+                        greyscale.current,
+                        colors.current,
+                        palette,
+                        isColorInverted,
+                        contrast,
+                        brightness,
+                    );
+                    onAsciiChange(coloredAscii.ascii, resolution, coloredAscii.colors);
+                } else {
+                    const newAscii = getAsciiFromGreyscale(
+                        greyscale.current,
+                        palette,
+                        isColorInverted,
+                        contrast,
+                        brightness,
+                    );
+                    onAsciiChange(newAscii, resolution);
+                }
 
-                onAsciiChange(newAscii, resolution);
                 // TODO: this causes unnecessary state updates, but it makes the resolution change
                 // look smoothest. Maybe there's a better way to do this?
                 onSpecsChange({
@@ -319,6 +348,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             contrast,
             brightness,
             resetLookups: true,
+            useColors,
         });
     }, 5);
 
@@ -334,6 +364,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             contrast,
             brightness,
             resetLookups: false,
+            useColors,
         });
     }, 5);
 
@@ -349,6 +380,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             contrast,
             brightness,
             resetLookups: false,
+            useColors,
         });
     }, 5);
 
@@ -371,6 +403,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     contrast,
                     brightness,
                     resetLookups: true,
+                    useColors,
                 });
                 setCurrentFile(imageFile);
             });
@@ -391,6 +424,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     contrast,
                     brightness,
                     resetLookups: true,
+                    useColors,
                 });
                 setCurrentFile(imageFile);
             }}
@@ -408,6 +442,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     brightness,
                     contrast,
                     resetLookups: false,
+                    useColors,
                 });
             }}
             isColorInverted={isColorInverted}
@@ -423,6 +458,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     brightness,
                     contrast,
                     resetLookups: false,
+                    useColors,
                 });
             }}
             contrast={contrast}
@@ -430,6 +466,22 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             brightness={brightness}
             onBrightnessChange={debouncedOnBrightnessChange}
             isVideoEditMode={Boolean(videoForEditMode)}
+            useColors={useColors}
+            onUseColorsToggle={() => {
+                setUseColors(!useColors);
+                setLoadingState(isAsciiVideo);
+                updateAscii({
+                    palette: selectedPalette,
+                    isColorInverted,
+                    resolution: specs.resolution,
+                    file: currentFile,
+                    isVideo: isAsciiVideo,
+                    brightness,
+                    contrast,
+                    resetLookups: false,
+                    useColors: !useColors,
+                });
+            }}
             onClickGenerateVideo={() => {
                 if (videoForEditMode) {
                     setIsAsciiVideo(true);
@@ -444,6 +496,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                         contrast,
                         brightness,
                         resetLookups: true,
+                        useColors,
                     });
                     setCurrentFile(videoForEditMode);
                     setVideoForEditMode(undefined);

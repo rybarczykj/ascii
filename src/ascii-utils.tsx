@@ -56,6 +56,25 @@ export const getGreyscale = (data: ImageData): number[][] => {
     return greyscale;
 };
 
+export const getColors = (data: ImageData): string[][] => {
+    const pixels = data.data;
+    const colors = [];
+
+    for (let y = 0; y < data.height; y++) {
+        const colorRow = [];
+        for (let x = 0; x < data.width; x++) {
+            const pixelIndex = (y * data.width + x) * 4;
+            const r = pixels[pixelIndex];
+            const g = pixels[pixelIndex + 1];
+            const b = pixels[pixelIndex + 2];
+            const color = `rgb(${r}, ${g}, ${b})`;
+            colorRow.push(color);
+        }
+        colors.push(colorRow);
+    }
+    return colors;
+};
+
 export const getAsciiFromGreyscale = (
     greyscale: number[][],
     asciiChars: string | string[],
@@ -87,6 +106,45 @@ export const getAsciiFromGreyscale = (
         ascii += '\n';
     }
     return ascii;
+};
+
+export const getColoredAsciiFromGreyscale = (
+    greyscale: number[][],
+    colors: string[][],
+    asciiChars: string | string[],
+    inverse = false,
+    contrast: number,
+    brightness: number,
+): { ascii: string; colors: string[] } => {
+    let ascii = '';
+    const colorArray: string[] = [];
+
+    // iterate over each row, and each pixel in the row
+    for (let y = 0; y < greyscale.length; y++) {
+        for (let x = 0; x < greyscale[y].length; x++) {
+            const luminance = greyscale[y][x];
+            const color = colors[y][x];
+
+            const adjustedLuminance = brightness
+                ? Math.max(Math.min(luminance + brightness, 255), 0)
+                : luminance;
+
+            const contrastedLuminance = contrast
+                ? Math.max(Math.min((adjustedLuminance - 127.5) * contrast, 255), 0)
+                : adjustedLuminance;
+
+            const asciiIndex = Math.floor((contrastedLuminance / 255) * (asciiChars.length - 1));
+            const char = inverse
+                ? asciiChars[asciiChars.length - asciiIndex - 1]
+                : asciiChars[asciiIndex];
+
+            ascii += char;
+            colorArray.push(color);
+        }
+        ascii += '\n';
+        colorArray.push(''); // empty color for newline
+    }
+    return { ascii, colors: colorArray };
 };
 
 const resize = (image: HTMLImageElement, maxHeight: number, canvas: HTMLCanvasElement) => {
