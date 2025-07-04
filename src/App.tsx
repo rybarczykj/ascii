@@ -66,7 +66,7 @@ const ColoredAscii: React.FC<ColoredAsciiProps> = ({ ascii, colors, style }) => 
 };
 
 const App: React.FC = () => {
-    const [ascii, setAscii] = React.useState<string | string[]>('');
+    const [ascii, setAscii] = React.useState<string | string[] | { ascii: string; colors: string[] }[]>('');
     const [asciiColors, setAsciiColors] = React.useState<string[]>([]);
     const [specs, setSpecs] = React.useState<SpecsState>({
         fontSize: 30,
@@ -78,14 +78,23 @@ const App: React.FC = () => {
         kerning: 0,
         lineHeight: 1,
     });
-
+    console.log('specs', specs);
 
     const lineHeight = 1000 / specs.resolution;
+    console.log('ascii', ascii.slice(0, 100));
 
-    const handleAsciiChange = (asciiData: string | string[], resolution: number, colors?: string[]) => {
+    const handleAsciiChange = (asciiData: string | string[] | { ascii: string; colors: string[] }[], resolution: number, colors?: string[]) => {
         if (typeof asciiData === 'string') {
             setAscii(asciiData);
             setAsciiColors(colors || []);
+        } else if (Array.isArray(asciiData) && asciiData.length > 0 && typeof asciiData[0] === 'string') {
+            // Regular video frames
+            setAscii(asciiData as string[]);
+            setAsciiColors([]);
+        } else if (Array.isArray(asciiData) && asciiData.length > 0 && typeof asciiData[0] === 'object') {
+            // Colored video frames
+            setAscii(asciiData as { ascii: string; colors: string[] }[]);
+            setAsciiColors([]);
         } else {
             setAscii(asciiData);
             setAsciiColors([]);
@@ -142,7 +151,16 @@ const App: React.FC = () => {
                                 fontFamily: specs.fontFamily,
                                 letterSpacing: `${specs.kerning}px`,
                             }}>
-                            <AsciiVideo asciiFrames={ascii} />
+                            <AsciiVideo
+                                asciiFrames={ascii as string[] | { ascii: string; colors: string[] }[]}
+                                style={{
+                                    fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                                    lineHeight: `${lineHeight * specs.zoom}px`,
+                                    fontWeight: specs.weight,
+                                    fontFamily: specs.fontFamily,
+                                    letterSpacing: `${specs.kerning}px`,
+                                }}
+                            />
                         </div>
                     )
                 ) : (

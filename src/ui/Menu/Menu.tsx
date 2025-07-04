@@ -30,7 +30,7 @@ export const ASCIICHARS = [
 const asciiOptions = ASCIICHARS.map((char) => ({ value: char, label: char }));
 
 interface MenuContainerProps {
-    onAsciiChange: (ascii: string | string[], resolution: number, colors?: string[]) => void;
+    onAsciiChange: (ascii: string | string[] | { ascii: string; colors: string[] }[], resolution: number, colors?: string[]) => void;
     specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
     onCopy: () => void;
@@ -286,6 +286,7 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 (frames) => onAsciiChange(frames, resolution),
                 contrast,
                 brightness,
+                useColors,
             );
         } else {
             resizeImage({

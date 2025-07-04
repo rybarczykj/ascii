@@ -1,13 +1,14 @@
-import { getAsciiFromContext } from '../ascii-utils';
+import { getAsciiFromContext, getGreyscale, getColors, getColoredAsciiFromGreyscale } from '../ascii-utils';
 
 export const processVideoFrames = async (
     video: HTMLVideoElement,
     palette: string | string[],
     asciiResolution: number,
     isColorInverted: boolean,
-    onVideoFramesChange: (frame: string[]) => void,
+    onVideoFramesChange: (frame: string[] | { ascii: string; colors: string[] }[]) => void,
     contrast: number,
     brightness: number,
+    useColors = false,
 ) => {
     // Wait for video metadata to load
     await new Promise<void>((resolve) => {
@@ -22,7 +23,7 @@ export const processVideoFrames = async (
     });
     if (!context || !video) return;
 
-    const frames: string[] = [];
+    const frames: string[] | { ascii: string; colors: string[] }[] = [];
 
     const frameRate = 10; // Number of frames per second (adjust this based on performance)
 
@@ -39,14 +40,30 @@ export const processVideoFrames = async (
 
     const processFrame = async () => {
         context.drawImage(video, 0, 0, width, height);
-        const frameAscii = getAsciiFromContext(
-            context,
-            palette,
-            isColorInverted,
-            contrast,
-            brightness,
-        );
-        frames.push(frameAscii);
+        
+        if (useColors) {
+            const imageData = context.getImageData(0, 0, width, height);
+            const greyscale = getGreyscale(imageData);
+            const colors = getColors(imageData);
+            const coloredFrame = getColoredAsciiFromGreyscale(
+                greyscale,
+                colors,
+                palette,
+                isColorInverted,
+                contrast,
+                brightness,
+            );
+            (frames as { ascii: string; colors: string[] }[]).push(coloredFrame);
+        } else {
+            const frameAscii = getAsciiFromContext(
+                context,
+                palette,
+                isColorInverted,
+                contrast,
+                brightness,
+            );
+            (frames as string[]).push(frameAscii);
+        }
 
         if (!video.paused && !video.ended && !(video.currentTime >= video.duration)) {
             setTimeout(processFrame, 1000 / frameRate);
