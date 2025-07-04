@@ -1,9 +1,9 @@
 import './index.css';
 import React from 'react';
 import { MenuContainer as Menu } from './ui/Menu/Menu';
-import { AsciiVideo } from './video/asciiVideo';
-
-//rewrite as enum?
+import { StreamingAsciiVideo } from './video/asciiVideo';
+import { StreamingVideoProcessor } from './video/streaming-video-processor';
+import { getAsciiFromContext, getGreyscale, getColors, getColoredAsciiFromGreyscale } from './ascii-utils';
 
 export const Fonts = [
     'Ibm Plex Mono',
@@ -44,7 +44,6 @@ const ColoredAscii: React.FC<ColoredAsciiProps> = ({ ascii, colors, style }) => 
             {lines.map((line, lineIndex) => (
                 <div key={lineIndex}>
                     {line.split('').map((char, charIndex) => {
-                        // Find the next non-empty color (skip newline placeholders)
                         let color = 'inherit';
                         while (colorIndex < colors.length && colors[colorIndex] === '') {
                             colorIndex++;
@@ -66,8 +65,7 @@ const ColoredAscii: React.FC<ColoredAsciiProps> = ({ ascii, colors, style }) => 
 };
 
 const App: React.FC = () => {
-    const [ascii, setAscii] = React.useState<string | string[] | { ascii: string; colors: string[] }[]>('');
-    const [asciiColors, setAsciiColors] = React.useState<string[]>([]);
+    // Core state
     const [specs, setSpecs] = React.useState<SpecsState>({
         fontSize: 30,
         resolution: 100,
@@ -78,26 +76,96 @@ const App: React.FC = () => {
         kerning: 0,
         lineHeight: 1,
     });
-    console.log('specs', specs);
+
+    // Video streaming state
+    const [videoFile, setVideoFile] = React.useState<File | null>(null);
+    const [videoElement, setVideoElement] = React.useState<HTMLVideoElement | null>(null);
+    const [isStreamingVideo, setIsStreamingVideo] = React.useState(false);
+
+    // Image state (for non-video files)
+    const [imageAscii, setImageAscii] = React.useState<string>('');
+    const [imageColors, setImageColors] = React.useState<string[]>([]);
+
+    // Visual settings
+    const [selectedPalette, setSelectedPalette] = React.useState<string | string[]>('8M0|*|::`,.');
+    const [isColorInverted, setIsColorInverted] = React.useState(false);
+    const [useColors, setUseColors] = React.useState(false);
+    const [contrast, setContrast] = React.useState(1);
+    const [brightness, setBrightness] = React.useState(0);
+
+    // Video playback controls (removed since we're not adding video controls)
 
     const lineHeight = 1000 / specs.resolution;
-    console.log('ascii', ascii.slice(0, 100));
 
+    // Handle video upload - go directly to streaming mode
+    const handleVideoUpload = (file: File) => {
+        console.log('handleVideoUpload called with file:', file.name);
+        setVideoFile(file);
+        setIsStreamingVideo(true);
+        // Clear any existing image
+        setImageAscii('');
+        setImageColors([]);
+    };
+
+    // Handle image upload - process immediately
+    const handleImageUpload = (file: File) => {
+        setVideoFile(null);
+        setIsStreamingVideo(false);
+
+        // Process image immediately using the existing utils
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        const img = new Image();
+
+        img.onload = () => {
+            const aspectRatio = img.width / img.height;
+            const width = specs.resolution;
+            const height = Math.floor((0.6 * width) / aspectRatio); // Using same multiplier as video
+
+            canvas.width = width;
+            canvas.height = height;
+            context?.drawImage(img, 0, 0, width, height);
+
+            if (useColors) {
+                const imageData = context?.getImageData(0, 0, width, height);
+                if (imageData) {
+                    const greyscale = getGreyscale(imageData);
+                    const colors = getColors(imageData);
+                    const coloredAscii = getColoredAsciiFromGreyscale(
+                        greyscale,
+                        colors,
+                        selectedPalette,
+                        isColorInverted,
+                        contrast,
+                        brightness,
+                    );
+                    setImageAscii(coloredAscii.ascii);
+                    setImageColors(coloredAscii.colors);
+                }
+            } else {
+                if (context) {
+                    const frameAscii = getAsciiFromContext(
+                        context,
+                        selectedPalette,
+                        isColorInverted,
+                        contrast,
+                        brightness,
+                    );
+                    setImageAscii(frameAscii);
+                    setImageColors([]);
+                }
+            }
+        };
+
+        img.src = URL.createObjectURL(file);
+    };
+
+    // Legacy handler for Menu compatibility (does nothing for videos now)
     const handleAsciiChange = (asciiData: string | string[] | { ascii: string; colors: string[] }[], resolution: number, colors?: string[]) => {
+        // Only handle image data, ignore video data since we're streaming
         if (typeof asciiData === 'string') {
-            setAscii(asciiData);
-            setAsciiColors(colors || []);
-        } else if (Array.isArray(asciiData) && asciiData.length > 0 && typeof asciiData[0] === 'string') {
-            // Regular video frames
-            setAscii(asciiData as string[]);
-            setAsciiColors([]);
-        } else if (Array.isArray(asciiData) && asciiData.length > 0 && typeof asciiData[0] === 'object') {
-            // Colored video frames
-            setAscii(asciiData as { ascii: string; colors: string[] }[]);
-            setAsciiColors([]);
-        } else {
-            setAscii(asciiData);
-            setAsciiColors([]);
+            setImageAscii(asciiData);
+            setImageColors(colors || []);
         }
     };
 
@@ -105,42 +173,71 @@ const App: React.FC = () => {
         <div className="flex-container">
             <Menu
                 specs={specs}
-                onSpecsChange={(specs: SpecsState) => setSpecs(specs)}
+                onSpecsChange={setSpecs}
                 onAsciiChange={handleAsciiChange}
                 onCopy={() => {
-                    navigator.clipboard.writeText(
-                        typeof ascii === 'string' ? ascii : JSON.stringify(ascii),
-                    );
+                    const textToCopy = isStreamingVideo
+                        ? "Video streaming - use browser copy on the ASCII output"
+                        : imageAscii;
+                    navigator.clipboard.writeText(textToCopy);
+                }}
+                onVideoUpload={handleVideoUpload}
+                onImageUpload={handleImageUpload}
+                palette={selectedPalette}
+                onPaletteChange={setSelectedPalette}
+                isColorInverted={isColorInverted}
+                onColorInvertedToggle={() => setIsColorInverted(v => !v)}
+                contrast={contrast}
+                onContrastChange={setContrast}
+                brightness={brightness}
+                onBrightnessChange={setBrightness}
+                useColors={useColors}
+                onUseColorsToggle={() => setUseColors(v => !v)}
+                isVideoEditMode={false} // No more edit mode
+                onClickGenerateVideo={() => {
+                    // No-op - streaming mode doesn't need this
                 }}
             />
+
+            {/* Hidden video element for streaming */}
+            <StreamingVideoProcessor
+                videoFile={videoFile}
+                onVideoElementReady={setVideoElement}
+            />
+
             <pre>
-                {ascii !== '' ? (
-                    typeof ascii === 'string' ? (
-                        asciiColors.length > 0 ? (
-                            <ColoredAscii
-                                ascii={ascii}
-                                colors={asciiColors}
-                                style={{
-                                    fontSize: `${lineHeight * 1 * specs.zoom}px`,
-                                    lineHeight: `${lineHeight * specs.zoom}px`,
-                                    fontWeight: specs.weight,
-                                    fontFamily: specs.fontFamily,
-                                    letterSpacing: `${specs.kerning}px`,
-                                }}
-                            />
-                        ) : (
-                            <div
-                                className="ascii"
-                                style={{
-                                    fontSize: `${lineHeight * 1 * specs.zoom}px`,
-                                    lineHeight: `${lineHeight * specs.zoom}px`,
-                                    fontWeight: specs.weight,
-                                    fontFamily: specs.fontFamily,
-                                    letterSpacing: `${specs.kerning}px`,
-                                }}>
-                                {ascii}
-                            </div>
-                        )
+                {isStreamingVideo && videoElement ? (
+                    <StreamingAsciiVideo
+                        videoElement={videoElement}
+                        palette={selectedPalette}
+                        asciiResolution={specs.resolution}
+                        isColorInverted={isColorInverted}
+                        contrast={contrast}
+                        brightness={brightness}
+                        useColors={useColors}
+                        frameRate={10}
+                        style={{
+                            fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                            lineHeight: `${lineHeight * specs.zoom}px`,
+                            fontWeight: specs.weight,
+                            fontFamily: specs.fontFamily,
+                            letterSpacing: `${specs.kerning}px`,
+                        }}
+                        aspectRatioMultiplier={0.6}
+                    />
+                ) : imageAscii ? (
+                    imageColors.length > 0 ? (
+                        <ColoredAscii
+                            ascii={imageAscii}
+                            colors={imageColors}
+                            style={{
+                                fontSize: `${lineHeight * 1 * specs.zoom}px`,
+                                lineHeight: `${lineHeight * specs.zoom}px`,
+                                fontWeight: specs.weight,
+                                fontFamily: specs.fontFamily,
+                                letterSpacing: `${specs.kerning}px`,
+                            }}
+                        />
                     ) : (
                         <div
                             className="ascii"
@@ -151,16 +248,7 @@ const App: React.FC = () => {
                                 fontFamily: specs.fontFamily,
                                 letterSpacing: `${specs.kerning}px`,
                             }}>
-                            <AsciiVideo
-                                asciiFrames={ascii as string[] | { ascii: string; colors: string[] }[]}
-                                style={{
-                                    fontSize: `${lineHeight * 1 * specs.zoom}px`,
-                                    lineHeight: `${lineHeight * specs.zoom}px`,
-                                    fontWeight: specs.weight,
-                                    fontFamily: specs.fontFamily,
-                                    letterSpacing: `${specs.kerning}px`,
-                                }}
-                            />
+                            {imageAscii}
                         </div>
                     )
                 ) : (

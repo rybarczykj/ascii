@@ -34,6 +34,20 @@ interface MenuContainerProps {
     specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
     onCopy: () => void;
+    onVideoUpload: (file: File) => void;
+    onImageUpload: (file: File) => void;
+    palette: string | string[];
+    onPaletteChange: (palette: string | string[]) => void;
+    isColorInverted: boolean;
+    onColorInvertedToggle: () => void;
+    contrast: number;
+    onContrastChange: (contrast: number) => void;
+    brightness: number;
+    onBrightnessChange: (brightness: number) => void;
+    useColors: boolean;
+    onUseColorsToggle: () => void;
+    isVideoEditMode: boolean;
+    onClickGenerateVideo: () => void;
 }
 
 // extend MenuContainerProps
@@ -204,23 +218,6 @@ const Menu = ({
                         <button id="clipboard-button" className="hidden-button" onClick={onCopy} />
                     </div>
                 </div>
-                {isVideoEditMode && (
-                    <div className="info-box ">
-                        {
-                            "here's the first frame of the video. configure to your liking, then press the button to generate your result \n"
-                        }
-                        <div>
-                            <label htmlFor="generate-video-button" className={'clickable-button'}>
-                                Generate video
-                            </label>
-                            <button
-                                id="generate-video-button"
-                                className="hidden-button"
-                                onClick={onClickGenerateVideo}></button>
-                            <span className="highlighted-element">!!</span>
-                        </div>
-                    </div>
-                )}
             </div>
         </DragDropFiles>
     );
@@ -386,29 +383,8 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     }, 5);
 
     const handleVideoUpload = (videoFile: File) => {
-        {
-            video.src = URL.createObjectURL(videoFile);
-            setVideoForEditMode(videoFile);
-            setIsAsciiVideo(false);
-
-            getFirstFrameOfVideoAsImageFile(video).then((imageFile) => {
-                if (!imageFile) {
-                    return;
-                }
-                updateAscii({
-                    palette: selectedPalette,
-                    isColorInverted,
-                    resolution: specs.resolution,
-                    file: imageFile,
-                    isVideo: false,
-                    contrast,
-                    brightness,
-                    resetLookups: true,
-                    useColors,
-                });
-                setCurrentFile(imageFile);
-            });
-        }
+        // Use the new streaming approach by calling the prop directly
+        props.onVideoUpload(videoFile);
     };
     return (
         <Menu
