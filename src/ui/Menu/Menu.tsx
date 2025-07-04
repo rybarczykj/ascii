@@ -228,11 +228,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
 
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [isAsciiVideo, setIsAsciiVideo] = React.useState(false);
-    const [selectedPalette, setSelectedPalette] = React.useState<string | string[]>(ASCIICHARS[0]);
-    const [isColorInverted, setInvert] = React.useState(false);
-    const [useColors, setUseColors] = React.useState(false);
-    const [contrast, setContrast] = React.useState(1);
-    const [brightness, setBrightness] = React.useState(0);
     const [videoForEditMode, setVideoForEditMode] = React.useState<File>();
 
     const video = document.createElement('video');
@@ -338,47 +333,45 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     const debouncedOnResolutionChange = debounce((resolution: number) => {
         setLoadingState(isAsciiVideo);
         updateAscii({
-            palette: selectedPalette,
-            isColorInverted,
+            palette: props.palette,
+            isColorInverted: props.isColorInverted,
             resolution,
             file: currentFile,
             isVideo: isAsciiVideo,
-            contrast,
-            brightness,
+            contrast: props.contrast,
+            brightness: props.brightness,
             resetLookups: true,
-            useColors,
+            useColors: props.useColors,
         });
     }, 5);
 
     const debouncedOnContrastChange = debounce((contrast: number) => {
         setLoadingState(isAsciiVideo);
-        setContrast(contrast);
         updateAscii({
-            palette: selectedPalette,
-            isColorInverted,
+            palette: props.palette,
+            isColorInverted: props.isColorInverted,
             resolution: specs.resolution,
             file: currentFile,
             isVideo: isAsciiVideo,
             contrast,
-            brightness,
+            brightness: props.brightness,
             resetLookups: false,
-            useColors,
+            useColors: props.useColors,
         });
     }, 5);
 
     const debouncedOnBrightnessChange = debounce((brightness: number) => {
         setLoadingState(isAsciiVideo);
-        setBrightness(brightness);
         updateAscii({
-            palette: selectedPalette,
-            isColorInverted,
+            palette: props.palette,
+            isColorInverted: props.isColorInverted,
             resolution: specs.resolution,
             file: currentFile,
             isVideo: isAsciiVideo,
-            contrast,
+            contrast: props.contrast,
             brightness,
             resetLookups: false,
-            useColors,
+            useColors: props.useColors,
         });
     }, 5);
 
@@ -393,70 +386,76 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             onImageUpload={(imageFile) => {
                 setIsAsciiVideo(false);
                 updateAscii({
-                    palette: selectedPalette,
-                    isColorInverted,
+                    palette: props.palette,
+                    isColorInverted: props.isColorInverted,
                     resolution: specs.resolution,
                     file: imageFile,
                     isVideo: false,
-                    contrast,
-                    brightness,
+                    contrast: props.contrast,
+                    brightness: props.brightness,
                     resetLookups: true,
-                    useColors,
+                    useColors: props.useColors,
                 });
                 setCurrentFile(imageFile);
             }}
             onVideoUpload={handleVideoUpload}
-            palette={selectedPalette}
+            palette={props.palette}
             onPaletteChange={(newPalette) => {
-                setSelectedPalette(newPalette);
+                props.onPaletteChange(newPalette);
                 setLoadingState(isAsciiVideo);
                 updateAscii({
                     palette: newPalette,
-                    isColorInverted,
+                    isColorInverted: props.isColorInverted,
                     resolution: specs.resolution,
                     file: currentFile,
                     isVideo: isAsciiVideo,
-                    brightness,
-                    contrast,
+                    brightness: props.brightness,
+                    contrast: props.contrast,
                     resetLookups: false,
-                    useColors,
+                    useColors: props.useColors,
                 });
             }}
-            isColorInverted={isColorInverted}
+            isColorInverted={props.isColorInverted}
             onColorInvertedToggle={() => {
-                setInvert(!isColorInverted);
+                props.onColorInvertedToggle();
                 setLoadingState(isAsciiVideo);
                 updateAscii({
-                    palette: selectedPalette,
-                    isColorInverted: !isColorInverted,
+                    palette: props.palette,
+                    isColorInverted: !props.isColorInverted,
                     resolution: specs.resolution,
                     file: currentFile,
                     isVideo: isAsciiVideo,
-                    brightness,
-                    contrast,
+                    brightness: props.brightness,
+                    contrast: props.contrast,
                     resetLookups: false,
-                    useColors,
+                    useColors: props.useColors,
                 });
             }}
-            contrast={contrast}
-            onContrastChange={debouncedOnContrastChange}
-            brightness={brightness}
-            onBrightnessChange={debouncedOnBrightnessChange}
+            contrast={props.contrast}
+            onContrastChange={(contrast) => {
+                props.onContrastChange(contrast);
+                debouncedOnContrastChange(contrast);
+            }}
+            brightness={props.brightness}
+            onBrightnessChange={(brightness) => {
+                props.onBrightnessChange(brightness);
+                debouncedOnBrightnessChange(brightness);
+            }}
             isVideoEditMode={Boolean(videoForEditMode)}
-            useColors={useColors}
+            useColors={props.useColors}
             onUseColorsToggle={() => {
-                setUseColors(!useColors);
+                props.onUseColorsToggle();
                 setLoadingState(isAsciiVideo);
                 updateAscii({
-                    palette: selectedPalette,
-                    isColorInverted,
+                    palette: props.palette,
+                    isColorInverted: props.isColorInverted,
                     resolution: specs.resolution,
                     file: currentFile,
                     isVideo: isAsciiVideo,
-                    brightness,
-                    contrast,
+                    brightness: props.brightness,
+                    contrast: props.contrast,
                     resetLookups: false,
-                    useColors: !useColors,
+                    useColors: !props.useColors,
                 });
             }}
             onClickGenerateVideo={() => {
@@ -465,15 +464,15 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                     setLoadingState(true);
 
                     updateAscii({
-                        palette: selectedPalette,
-                        isColorInverted,
+                        palette: props.palette,
+                        isColorInverted: props.isColorInverted,
                         resolution: specs.resolution,
                         file: videoForEditMode,
                         isVideo: true,
-                        contrast,
-                        brightness,
+                        contrast: props.contrast,
+                        brightness: props.brightness,
                         resetLookups: true,
-                        useColors,
+                        useColors: props.useColors,
                     });
                     setCurrentFile(videoForEditMode);
                     setVideoForEditMode(undefined);

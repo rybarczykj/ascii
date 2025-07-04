@@ -62,6 +62,7 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
     style,
     aspectRatioMultiplier = 0.6,
 }) => {
+
     const [currentFrame, setCurrentFrame] = React.useState<string | { ascii: string; colors: string[] } | null>(null);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
@@ -80,10 +81,10 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
                 canvasInitializedRef.current = true;
             }
         }
-    });
+    }, []);
 
     // Process a single frame from the video
-    const processFrame = React.useCallback(() => {
+    const processFrame = React.useCallback((forceUpdate = false) => {
         try {
             if (!videoElement || !contextRef.current || !canvasRef.current) {
                 return;
@@ -93,23 +94,22 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
             const context = contextRef.current;
             const canvas = canvasRef.current;
 
-            // Only process if video time has changed significantly
-            if (Math.abs(video.currentTime - lastProcessedTimeRef.current) < 0.05) {
+            // Only process if video time has changed significantly, unless forced update
+            if (!forceUpdate && Math.abs(video.currentTime - lastProcessedTimeRef.current) < 0.05) {
                 return;
             }
 
-            lastProcessedTimeRef.current = video.currentTime;
+            // Only update the time reference if it's not a forced update
+            if (!forceUpdate) {
+                lastProcessedTimeRef.current = video.currentTime;
+            }
 
             // Calculate dimensions based on aspect ratio
             const aspectRatio = video.videoWidth / video.videoHeight;
             const width = asciiResolution;
             const height = Math.floor((aspectRatioMultiplier * width) / aspectRatio);
 
-            // Debug: log dimensions once
-            if (lastProcessedTimeRef.current === 0) {
-                console.log('Video dimensions:', video.videoWidth, 'x', video.videoHeight);
-                console.log('Canvas dimensions:', width, 'x', height);
-            }
+
 
             // Update canvas size if needed
             if (canvas.width !== width || canvas.height !== height) {
@@ -156,8 +156,7 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
             return;
         }
 
-        console.log('Starting animation loop, video ready state:', videoElement.readyState);
-        console.log('Video duration:', videoElement.duration);
+
 
         const animate = (currentTime: number) => {
             if (!videoElement) {
@@ -195,7 +194,7 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
     // Process frame immediately when props change (for instant updates)
     React.useEffect(() => {
         if (videoElement && videoElement.readyState >= 2) {
-            processFrame();
+            processFrame(true);
         }
     }, [palette, asciiResolution, isColorInverted, contrast, brightness, useColors, processFrame]);
 
