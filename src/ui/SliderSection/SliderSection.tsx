@@ -19,77 +19,67 @@ export const SliderSection: React.FC<{
     brightness,
     onBrightnessChange,
 }) => {
-    // TODO: consider using an exponential scale for resolution
-    return (
-        <>
-            <Slider
-                title={'resolution:'}
-                onChange={(resolution) => {
-                    onResolutionChange(resolution);
-                }}
-                value={specs.resolution}
-                min={5}
-                max={500}
-                label={specs.resolution.toString().slice(0, 5)}
-            />
+        // TODO: consider using an exponential scale for resolution
+        return (
+            <>
+                <Slider
+                    title={'resolution:'}
+                    onChange={(resolution) => {
+                        onResolutionChange(resolution);
+                    }}
+                    value={specs.resolution}
+                    min={5}
+                    max={500}
+                    label={specs.resolution.toString().slice(0, 5)}
+                />
 
-            <Slider
-                title={'contrast:'}
-                onChange={(newContrast) => {
-                    onContrastChange(newContrast);
-                }}
-                value={contrast}
-                min={0.1}
-                max={50}
-                step={0.1}
-                label={contrast.toString()}
-            />
+                <Slider
+                    title={'contrast:'}
+                    onChange={(newContrast) => {
+                        onContrastChange(newContrast);
+                    }}
+                    value={contrast}
+                    min={0.1}
+                    max={50}
+                    step={0.1}
+                    label={contrast.toString()}
+                />
 
-            <Slider
-                title={'brightness:'}
-                onChange={(newBrightness) => {
-                    onBrightnessChange(newBrightness);
-                }}
-                value={brightness}
-                min={-255}
-                max={255}
-                step={1}
-                label={brightness.toString()}
-            />
+                <Slider
+                    title={'brightness:'}
+                    onChange={(newBrightness) => {
+                        onBrightnessChange(newBrightness);
+                    }}
+                    value={brightness}
+                    min={-255}
+                    max={255}
+                    step={1}
+                    label={brightness.toString()}
+                />
 
-            <Slider
-                title={'zoom:'}
-                onChange={(newZoom) => {
-                    onSpecsChange({ ...specs, zoom: newZoom });
-                }}
-                value={specs.zoom}
-                min={1}
-                max={10}
-                step={0.25}
-                label={specs.zoom.toString().slice(0, 4)}
-            />
-            <Slider
-                title={'font weight:'}
-                onChange={(newWeight) => {
-                    onSpecsChange({ ...specs, weight: newWeight });
-                }}
-                value={specs.weight}
-                min={0}
-                max={800}
-                label={specs.weight.toString()}
-            />
+                <Slider
+                    title={'zoom:'}
+                    onChange={(newZoom) => {
+                        onSpecsChange({ ...specs, zoom: newZoom });
+                    }}
+                    value={specs.zoom}
+                    min={1}
+                    max={10}
+                    step={0.25}
+                    label={specs.zoom.toString().slice(0, 4)}
+                />
 
-            <Slider
-                title={'kerning:'}
-                onChange={(newKerning) => {
-                    onSpecsChange({ ...specs, kerning: newKerning });
-                }}
-                value={specs.kerning}
-                min={-10}
-                max={10}
-                label={specs.kerning.toString()}
-            />
-            {/* <Slider
+                <Slider
+                    title={'font weight:'}
+                    onChange={(newWeight) => {
+                        onSpecsChange({ ...specs, weight: newWeight });
+                    }}
+                    value={specs.weight}
+                    min={0}
+                    max={800}
+                    label={specs.weight.toString()}
+                />
+                {/* <Slider
                 title={'line height:'}
                 onChange={(newLineHeight) => {
                     onSpecsChange({ ...specs, lineHeight: newLineHeight });
@@ -100,6 +90,6 @@ export const SliderSection: React.FC<{
                 step={0.1}
                 label={specs.lineHeight.toString()}
             /> */}
-        </>
-    );
-};
+            </>
+        );
+    };

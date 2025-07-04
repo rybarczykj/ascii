@@ -20,6 +20,10 @@ export const ASCIICHARS = [
     '░▒▓▔▕▖▗▘▙▚▛▜▝▞▟ ',
     '░▒▓█▄▀│┤╣║╚╔╗╝┐╩└╦╠┴═┬├╬─┼┘┌¦┼└┴┬├┐',
     '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
+    '☮Bbeo- ',
+    '☮8O0o:. ',
+    '♥♧♢♰♺ ',
+    '☮!*-·   ',
     ['8 ', 'M ', '0 ', '# ', '$ ', '| ', '* ', '+ ', ': ', ': ', '` ', '. ', '. '],
 ];
 
@@ -72,10 +76,10 @@ const Menu = ({
     brightness,
     onBrightnessChange,
 }: // textColor,
-// onTextColorChange,
-// backgroundColor,
-// onBackgroundColorChange,
-MenuProps): ReactElement => {
+    // onTextColorChange,
+    // backgroundColor,
+    // onBackgroundColorChange,
+    MenuProps): ReactElement => {
     const imageUploadHandler = (imageFile: File) => {
         if (imageFile.type === 'image/heic') {
             // Convert HEIC image to JPEG format
