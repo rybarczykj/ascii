@@ -1,6 +1,6 @@
 import { Slider } from '../Slider/Slider';
 import React from 'react';
-import { SpecsState } from '../../App';
+import { SpecsState } from '../../shared/types';
 
 export const SliderSection: React.FC<{
     specs: SpecsState;

@@ -1,14 +1,11 @@
 import { ReactElement } from 'react';
-import Dropdown from '../Dropdown/Dropdown';
-import { SliderSection } from '../SliderSection/SliderSection';
-import { Font, Fonts, SpecsState } from '../../shared/types';
+import { Dropdown, SliderSection, DragDropFiles } from '../../../shared/components';
+import { SpecsState, Fonts, Font } from '../../../shared/types';
 import heic2any from 'heic2any';
 import React from 'react';
-
 import { debounce } from 'lodash';
-import { getAsciiFromGreyscale, getGreyscale, resizeImage, getColors, getColoredAsciiFromGreyscale } from '../../ascii-utils';
-import './menu.css';
-import { DragDropFiles } from './DragDropFiles';
+import { getAsciiFromGreyscale, getGreyscale, resizeImage, getColors, getColoredAsciiFromGreyscale } from '../ascii-utils';
+import '../../../shared/styles/menu.css';
 
 export const ASCIICHARS = [
     '8M0|*|::`,.',
@@ -19,7 +16,7 @@ export const ASCIICHARS = [
     '▓▒▒░░ ',
     '░▒▓▔▕▖▗▘▙▚▛▜▝▞▟ ',
     '░▒▓█▄▀│┤╣║╚╔╗╝┐╩└╦╠┴═┬├╬─┼┘┌¦┼└┴┬├┐',
-    '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷“”!;:‘,’-.',
+    '$@WgBMQNR8%0&đD#OGKEHdbmSqpAPwU54ZX96f23kVhaeFCj1IoJyst7}{YnulzriTx?][*Lcv×<>)(/+=÷""!;:','-.',
     '☮Bbeo- ',
     '☮8O0o:. ',
     '♥♧♢♰♺ ',
@@ -29,7 +26,7 @@ export const ASCIICHARS = [
 
 const asciiOptions = ASCIICHARS.map((char) => ({ value: char, label: char }));
 
-interface MenuContainerProps {
+interface AsciiMenuContainerProps {
     onAsciiChange: (ascii: string | string[] | { ascii: string; colors: string[] }[], resolution: number, colors?: string[]) => void;
     specs: SpecsState;
     onSpecsChange: (specs: SpecsState) => void;
@@ -49,8 +46,7 @@ interface MenuContainerProps {
     isVideo?: boolean;
 }
 
-// extend MenuContainerProps
-interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
+interface AsciiMenuProps extends Omit<AsciiMenuContainerProps, 'onAsciiChange'> {
     onImageUpload: (file: File) => void;
     onVideoUpload: (video: File) => void;
     onResolutionChange: (resolution: number) => void;
@@ -62,16 +58,12 @@ interface MenuProps extends Omit<MenuContainerProps, 'onAsciiChange'> {
     onContrastChange: (contrast: number) => void;
     brightness: number;
     onBrightnessChange: (brightness: number) => void;
-    // textColor: string;
-    // onTextColorChange: (color: string) => void;`
-    // backgroundColor: string;
-    // onBackgroundColorChange: (color: string) => void;
     useColors: boolean;
     onUseColorsToggle: () => void;
     isVideo?: boolean;
 }
 
-const Menu = ({
+const AsciiMenu = ({
     specs,
     onSpecsChange,
     onCopy,
@@ -88,15 +80,9 @@ const Menu = ({
     onBrightnessChange,
     useColors,
     onUseColorsToggle,
-    isVideo,
-}: // textColor,
-    // onTextColorChange,
-    // backgroundColor,
-    // onBackgroundColorChange,
-    MenuProps): ReactElement => {
+}: AsciiMenuProps): ReactElement => {
     const imageUploadHandler = (imageFile: File) => {
         if (imageFile.type === 'image/heic') {
-            // Convert HEIC image to JPEG format
             try {
                 heic2any({
                     blob: imageFile,
@@ -107,12 +93,8 @@ const Menu = ({
                         imageFile.name.replace('.heic', '.jpg'),
                         { type: 'image/jpeg' },
                     );
-
-                    // Continue processing with the converted image
                     onImageUpload(convertedFile);
                 });
-
-                // Create a new File instance with the converted blob
             } catch (error) {
                 console.error('Error converting HEIC image:', error);
             }
@@ -167,6 +149,7 @@ const Menu = ({
                         onContrastChange={onContrastChange}
                         brightness={brightness}
                         onBrightnessChange={onBrightnessChange}
+                        showFontWeight={true}
                     />
                     <Dropdown
                         label="palette"
@@ -210,7 +193,6 @@ const Menu = ({
                         <label htmlFor="clipboard-button" className="clickable-button">
                             Save to clipboard
                         </label>
-
                         <button id="clipboard-button" className="hidden-button" onClick={onCopy} />
                     </div>
                 </div>
@@ -219,19 +201,15 @@ const Menu = ({
     );
 };
 
-export const MenuContainer = (props: MenuContainerProps): ReactElement => {
+export const AsciiMenuContainer = (props: AsciiMenuContainerProps): ReactElement => {
     const { specs, onAsciiChange, onSpecsChange } = props;
 
     const [currentFile, setCurrentFile] = React.useState<File>();
     const [isAsciiVideo, setIsAsciiVideo] = React.useState(false);
 
-    // store greyscale so it can be a lookup table (only for images)
     const greyscale = React.useRef<number[][]>([]);
     const colors = React.useRef<string[][]>([]);
 
-
-
-    // Simplified updateAscii function - only handles images now
     const updateAscii = ({
         palette,
         isColorInverted,
@@ -267,7 +245,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
                 return;
             }
 
-            // avoid recalculating greyscale for each frame
             if (resetLookups) {
                 greyscale.current = getGreyscale(data);
                 colors.current = getColors(data);
@@ -302,7 +279,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     };
 
     const debouncedOnResolutionChange = debounce((resolution: number) => {
-        // For video mode, just update the specs directly since we're using streaming
         if (isAsciiVideo) {
             props.onSpecsChange({
                 ...props.specs,
@@ -323,7 +299,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     }, 5);
 
     const debouncedOnContrastChange = debounce((contrast: number) => {
-        // For video mode, just update the contrast directly since we're using streaming
         if (isAsciiVideo) {
             props.onContrastChange(contrast);
         } else {
@@ -341,7 +316,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     }, 5);
 
     const debouncedOnBrightnessChange = debounce((brightness: number) => {
-        // For video mode, just update the brightness directly since we're using streaming
         if (isAsciiVideo) {
             props.onBrightnessChange(brightness);
         } else {
@@ -359,15 +333,13 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
     }, 5);
 
     const handleVideoUpload = (videoFile: File) => {
-        // Use the new streaming approach by calling the prop directly
         props.onVideoUpload(videoFile);
-        // Set the local state to indicate we're in video mode
         setIsAsciiVideo(true);
         setCurrentFile(videoFile);
     };
 
     return (
-        <Menu
+        <AsciiMenu
             {...props}
             isVideo={props.isVideo}
             onResolutionChange={debouncedOnResolutionChange}
@@ -389,7 +361,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             palette={props.palette}
             onPaletteChange={(newPalette) => {
                 props.onPaletteChange(newPalette);
-                // For video mode, just update the palette directly since we're using streaming
                 if (!isAsciiVideo) {
                     updateAscii({
                         palette: newPalette,
@@ -406,7 +377,6 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             isColorInverted={props.isColorInverted}
             onColorInvertedToggle={() => {
                 props.onColorInvertedToggle();
-                // For video mode, just update the color inversion directly since we're using streaming
                 if (!isAsciiVideo) {
                     updateAscii({
                         palette: props.palette,
@@ -423,21 +393,16 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
             contrast={props.contrast}
             onContrastChange={(contrast) => {
                 props.onContrastChange(contrast);
-                // For video mode, the debounced function will handle it directly
-                // For image mode, it will process through updateAscii
                 debouncedOnContrastChange(contrast);
             }}
             brightness={props.brightness}
             onBrightnessChange={(brightness) => {
                 props.onBrightnessChange(brightness);
-                // For video mode, the debounced function will handle it directly
-                // For image mode, it will process through updateAscii
                 debouncedOnBrightnessChange(brightness);
             }}
             useColors={props.useColors}
             onUseColorsToggle={() => {
                 props.onUseColorsToggle();
-                // For video mode, just update the use colors setting directly since we're using streaming
                 if (!isAsciiVideo) {
                     updateAscii({
                         palette: props.palette,
@@ -454,3 +419,4 @@ export const MenuContainer = (props: MenuContainerProps): ReactElement => {
         />
     );
 };
+

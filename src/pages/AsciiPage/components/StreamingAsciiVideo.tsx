@@ -1,41 +1,6 @@
 import React from 'react';
 import { getAsciiFromContext, getGreyscale, getColors, getColoredAsciiFromGreyscale } from '../ascii-utils';
-
-interface ColoredAsciiProps {
-    ascii: string;
-    colors: string[];
-    style: React.CSSProperties;
-}
-
-const ColoredAscii: React.FC<ColoredAsciiProps> = ({ ascii, colors, style }) => {
-    const lines = ascii.split('\n');
-    let colorIndex = 0;
-
-    return (
-        <div className="ascii" style={style}>
-            {lines.map((line, lineIndex) => (
-                <div key={lineIndex}>
-                    {line.split('').map((char, charIndex) => {
-                        // Find the next non-empty color (skip newline placeholders)
-                        let color = 'inherit';
-                        while (colorIndex < colors.length && colors[colorIndex] === '') {
-                            colorIndex++;
-                        }
-                        if (colorIndex < colors.length) {
-                            color = colors[colorIndex];
-                            colorIndex++;
-                        }
-                        return (
-                            <span key={charIndex} style={{ color }}>
-                                {char}
-                            </span>
-                        );
-                    })}
-                </div>
-            ))}
-        </div>
-    );
-};
+import { ColoredAscii } from './ColoredAscii';
 
 interface StreamingAsciiVideoProps {
     videoElement: HTMLVideoElement | null;
@@ -62,11 +27,6 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
     style,
     aspectRatioMultiplier = 0.6,
 }) => {
-
-    React.useEffect(() => {
-        console.log('asciiResolution', asciiResolution);
-    }, [asciiResolution]);
-
     const [currentFrame, setCurrentFrame] = React.useState<string | { ascii: string; colors: string[] } | null>(null);
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
@@ -113,8 +73,6 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
             const width = asciiResolution;
             const height = Math.floor((aspectRatioMultiplier * width) / aspectRatio);
 
-
-
             // Update canvas size if needed
             if (canvas.width !== width || canvas.height !== height) {
                 canvas.width = width;
@@ -159,8 +117,6 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
         if (!videoElement || videoElement.readyState < 2) {
             return;
         }
-
-
 
         const animate = (currentTime: number) => {
             if (!videoElement) {
@@ -231,44 +187,3 @@ export const StreamingAsciiVideo: React.FC<StreamingAsciiVideoProps> = ({
     );
 };
 
-// Legacy component for backward compatibility
-export const AsciiVideo = ({
-    asciiFrames,
-    frameRate = 10,
-    style,
-}: {
-    asciiFrames: string[] | { ascii: string; colors: string[] }[];
-    frameRate?: number;
-    style?: React.CSSProperties;
-}): JSX.Element | null => {
-    const [currentFrameIndex, setCurrentFrameIndex] = React.useState(0);
-
-    React.useEffect(() => {
-        if (asciiFrames.length === 0) {
-            return;
-        }
-        const interval = setInterval(() => {
-            setCurrentFrameIndex((prevIndex) => (prevIndex + 1) % asciiFrames.length);
-        }, 1000 / frameRate);
-
-        return () => clearInterval(interval);
-    }, [asciiFrames.length, frameRate]);
-
-    if (asciiFrames.length === 0) {
-        return null;
-    }
-
-    const currentFrame = asciiFrames[currentFrameIndex];
-
-    if (typeof currentFrame === 'string') {
-        return <div style={style}>{currentFrame}</div>;
-    } else {
-        return (
-            <ColoredAscii
-                ascii={currentFrame.ascii}
-                colors={currentFrame.colors}
-                style={style || {}}
-            />
-        );
-    }
-};

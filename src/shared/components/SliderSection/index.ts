@@ -1,0 +1,2 @@
+export { SliderSection } from './SliderSection';
+

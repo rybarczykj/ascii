@@ -4,23 +4,14 @@ interface StreamingVideoProcessorProps {
     videoFile: File | null;
     onVideoElementReady: (videoElement: HTMLVideoElement) => void;
     onError?: (error: string) => void;
-    playbackSpeed?: number;
 }
 
 export const StreamingVideoProcessor: React.FC<StreamingVideoProcessorProps> = ({
     videoFile,
     onVideoElementReady,
     onError,
-    playbackSpeed = 1,
 }) => {
     const videoRef = React.useRef<HTMLVideoElement>(null);
-
-    // Apply playback speed when it changes
-    React.useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.playbackRate = playbackSpeed;
-        }
-    }, [playbackSpeed]);
 
     React.useEffect(() => {
         if (!videoFile || !videoRef.current) return;
@@ -30,8 +21,6 @@ export const StreamingVideoProcessor: React.FC<StreamingVideoProcessorProps> = (
 
         const handleLoadedMetadata = () => {
             console.log('Video loaded metadata - calling onVideoElementReady');
-            // Set initial playback speed
-            video.playbackRate = playbackSpeed;
             onVideoElementReady(video);
             // Start playing automatically
             video.play().catch((error) => {
@@ -67,7 +56,7 @@ export const StreamingVideoProcessor: React.FC<StreamingVideoProcessorProps> = (
             video.removeEventListener('ended', handleEnded);
             URL.revokeObjectURL(videoUrl);
         };
-    }, [videoFile, onVideoElementReady, onError, playbackSpeed]);
+    }, [videoFile, onVideoElementReady, onError]);
 
     if (!videoFile) {
         return null;

@@ -1,0 +1,2 @@
+export { DragDropFiles } from './DragDropFiles';
+
