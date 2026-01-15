@@ -1,6 +1,7 @@
 import '../../shared/styles/menu.css';
 import '../../index.css';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AsciiMenuContainer as Menu } from './components/AsciiMenu';
 import { StreamingAsciiVideo } from './components/StreamingAsciiVideo';
 import { StreamingVideoProcessor } from './components/StreamingVideoProcessor';
@@ -9,6 +10,23 @@ import { getAsciiFromContext, getGreyscale, getColors, getColoredAsciiFromGreysc
 import { SpecsState } from '../../shared/types';
 
 const AsciiPage: React.FC = () => {
+    const navigate = useNavigate();
+
+    // Keyboard shortcut: press 'd' to go to dots mode
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't trigger if user is typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+            if (e.key === 'd' || e.key === 'D') {
+                navigate('/dots');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [navigate]);
+
     // Core state
     const [specs, setSpecs] = React.useState<SpecsState>({
         fontSize: 30,
@@ -205,4 +223,5 @@ const AsciiPage: React.FC = () => {
 };
 
 export default AsciiPage;
+
 

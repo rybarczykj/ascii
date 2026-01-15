@@ -35,3 +35,4 @@ export const ColoredAscii: React.FC<ColoredAsciiProps> = ({ ascii, colors, style
     );
 };
 
+

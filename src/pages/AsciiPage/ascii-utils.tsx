@@ -98,3 +98,4 @@ export const getColoredAsciiFromGreyscale = (
     return { ascii, colors: colorArray };
 };
 
+

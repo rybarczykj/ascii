@@ -1,6 +1,7 @@
 import '../../shared/styles/menu.css';
 import '../../index.css';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import { DotsMenu, DotShape } from './components/DotsMenu';
 import { DotsCanvas } from './components/DotsCanvas';
@@ -8,6 +9,23 @@ import { processImageForDots, ProcessedPixelData, resizeImage } from './dots-uti
 import { SpecsState } from '../../shared/types';
 
 const DotsPage: React.FC = () => {
+    const navigate = useNavigate();
+
+    // Keyboard shortcut: press 'a' to go to ASCII mode
+    React.useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't trigger if user is typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+            if (e.key === 'a' || e.key === 'A') {
+                navigate('/');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [navigate]);
+
     // Core state
     const [specs, setSpecs] = React.useState<SpecsState>({
         fontSize: 30,

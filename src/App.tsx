@@ -4,7 +4,7 @@ import DotsPage from './pages/DotsPage/DotsPage';
 
 function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename="/ascii">
             <Routes>
                 <Route path="/" element={<AsciiPage />} />
                 <Route path="/dots" element={<DotsPage />} />
