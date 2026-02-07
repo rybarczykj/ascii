@@ -86,6 +86,35 @@ export const DotsCanvas: React.FC<DotsCanvasProps> = ({
     const backgroundImageRef = React.useRef<HTMLImageElement | null>(null);
     const lastSourceUrlRef = React.useRef<string | null>(null);
 
+    // Calculate dot spacing to keep visual size constant regardless of resolution
+    const dotSpacing = (1000 / resolution) * zoom;
+
+    // Refs so draw() always sees latest props (react-p5 can invoke a stale draw on redraw())
+    const drawParamsRef = React.useRef({
+        pixelData,
+        forceOGColors,
+        removeWhite,
+        whitePoint,
+        shape,
+        minDotSize,
+        maxDotSize,
+        dotSpacing,
+        showOriginalBackground,
+        videoElement,
+    });
+    drawParamsRef.current = {
+        pixelData,
+        forceOGColors,
+        removeWhite,
+        whitePoint,
+        shape,
+        minDotSize,
+        maxDotSize,
+        dotSpacing,
+        showOriginalBackground,
+        videoElement,
+    };
+
     // Load background image when sourceFile changes
     React.useEffect(() => {
         if (sourceFile && showOriginalBackground) {
@@ -113,10 +142,6 @@ export const DotsCanvas: React.FC<DotsCanvasProps> = ({
         }
     }, [sourceFile, showOriginalBackground]);
 
-    // Calculate dot spacing to keep visual size constant regardless of resolution
-    // Similar to ASCII's lineHeight = 1000 / resolution
-    const dotSpacing = (1000 / resolution) * zoom;
-
     // Force redraw when any visual setting changes
     React.useEffect(() => {
         if (p5Ref.current && pixelData) {
@@ -126,94 +151,78 @@ export const DotsCanvas: React.FC<DotsCanvasProps> = ({
 
     const setup = (p5: P5Instance, canvasParentRef: Element) => {
         p5Ref.current = p5;
-        
-        if (!pixelData) {
+        const params = drawParamsRef.current;
+        if (!params.pixelData) {
             p5.createCanvas(300, 200).parent(canvasParentRef);
             p5.noLoop();
             return;
         }
 
-        // Calculate canvas size based on dot spacing
-        const canvasWidth = pixelData.width * dotSpacing;
-        const canvasHeight = pixelData.height * dotSpacing;
-        
+        const canvasWidth = params.pixelData.width * params.dotSpacing;
+        const canvasHeight = params.pixelData.height * params.dotSpacing;
         p5.createCanvas(canvasWidth, canvasHeight).parent(canvasParentRef);
-        p5.noLoop(); // Static image - only draw when we call redraw()
+        p5.noLoop();
         p5.noStroke();
     };
 
     const draw = (p5: P5Instance) => {
+        const params = drawParamsRef.current;
         p5.background(255);
         p5.noStroke();
-        
-        if (!pixelData) {
+
+        if (!params.pixelData) {
             return;
         }
 
-        // Max possible dot size (fills the cell)
-        const maxPossibleSize = dotSpacing * 0.95;
-
-        // Resize canvas if needed
-        const expectedWidth = pixelData.width * dotSpacing;
-        const expectedHeight = pixelData.height * dotSpacing;
+        const maxPossibleSize = params.dotSpacing * 0.95;
+        const expectedWidth = params.pixelData.width * params.dotSpacing;
+        const expectedHeight = params.pixelData.height * params.dotSpacing;
         if (p5.width !== expectedWidth || p5.height !== expectedHeight) {
             p5.resizeCanvas(expectedWidth, expectedHeight);
         }
 
-        // Draw original image/video as background if enabled
-        if (showOriginalBackground) {
-            // Use native canvas context to draw HTML elements directly
+        if (params.showOriginalBackground) {
             const ctx = p5.drawingContext as CanvasRenderingContext2D;
-            if (videoElement && videoElement.readyState >= 2) {
-                // Draw video frame as background
-                ctx.drawImage(videoElement, 0, 0, expectedWidth, expectedHeight);
+            if (params.videoElement && params.videoElement.readyState >= 2) {
+                ctx.drawImage(params.videoElement, 0, 0, expectedWidth, expectedHeight);
             } else if (backgroundImageRef.current) {
-                // Draw static image as background
                 ctx.drawImage(backgroundImageRef.current, 0, 0, expectedWidth, expectedHeight);
             }
         }
 
-        // Draw shapes with size based on brightness
-        for (let y = 0; y < pixelData.height; y++) {
-            for (let x = 0; x < pixelData.width; x++) {
-                const pixel = pixelData.pixels[y][x];
-                // Use original colors for rendering if forceOGColors is enabled
-                const colorPixel = forceOGColors ? pixelData.originalPixels[y][x] : pixel;
-                
-                // Calculate brightness (0-1) from adjusted RGB (for sizing)
+        for (let y = 0; y < params.pixelData.height; y++) {
+            for (let x = 0; x < params.pixelData.width; x++) {
+                const pixel = params.pixelData.pixels[y][x];
+                const colorPixel = params.forceOGColors ? params.pixelData.originalPixels[y][x] : pixel;
+
                 const brightness = (pixel.r + pixel.g + pixel.b) / (3 * 255);
-                
-                // Linear interpolation between min and max size based on brightness
-                const sizeMultiplier = minDotSize + (maxDotSize - minDotSize) * brightness;
+                const sizeMultiplier = params.minDotSize + (params.maxDotSize - params.minDotSize) * brightness;
                 const dotSize = maxPossibleSize * sizeMultiplier;
-                
-                // Skip drawing if dot size is too small (less than 0.5 pixels)
+
                 if (dotSize < 0.5) {
                     continue;
                 }
-                
-                // Skip drawing if removeWhite is enabled and pixel is above white point
-                if (removeWhite) {
+
+                if (params.removeWhite) {
                     const avgColor = (colorPixel.r + colorPixel.g + colorPixel.b) / 3;
-                    if (avgColor >= whitePoint) {
+                    if (avgColor >= params.whitePoint) {
                         continue;
                     }
                 }
-                
-                // Set fill and stroke based on shape type, using colorPixel for actual color
-                if (shape.includes('ring')) {
+
+                if (params.shape.includes('ring')) {
                     p5.stroke(colorPixel.r, colorPixel.g, colorPixel.b);
                     p5.noFill();
                 } else {
                     p5.noStroke();
                     p5.fill(colorPixel.r, colorPixel.g, colorPixel.b);
                 }
-                
+
                 drawShape(
                     p5,
-                    shape,
-                    x * dotSpacing + dotSpacing / 2,
-                    y * dotSpacing + dotSpacing / 2,
+                    params.shape,
+                    x * params.dotSpacing + params.dotSpacing / 2,
+                    y * params.dotSpacing + params.dotSpacing / 2,
                     dotSize
                 );
             }

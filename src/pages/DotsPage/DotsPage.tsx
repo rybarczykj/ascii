@@ -52,6 +52,7 @@ const DotsPage: React.FC = () => {
     const [useColors, setUseColors] = React.useState(true); // Default to colors for dots
     const [contrast, setContrast] = React.useState(1);
     const [brightness, setBrightness] = React.useState(0);
+    const [gamma, setGamma] = React.useState(1);
 
     // Dot size settings (as fraction of max dot size, 0-1)
     const [minDotSize, setMinDotSize] = React.useState(0.8);
@@ -80,6 +81,7 @@ const DotsPage: React.FC = () => {
             zoom: specs.zoom,
             contrast,
             brightness,
+            gamma,
             isColorInverted,
             useColors,
             minDotSize,
@@ -91,7 +93,7 @@ const DotsPage: React.FC = () => {
             frameRate,
             showOriginalBackground,
         });
-    }, [specs.resolution, specs.zoom, contrast, brightness, isColorInverted, useColors, minDotSize, maxDotSize, shape, forceOGColors, removeWhite, whitePoint, frameRate, showOriginalBackground]);
+    }, [specs.resolution, specs.zoom, contrast, brightness, gamma, isColorInverted, useColors, minDotSize, maxDotSize, shape, forceOGColors, removeWhite, whitePoint, frameRate, showOriginalBackground]);
 
     // Process image with current settings
     const processImage = React.useCallback(async (
@@ -99,6 +101,7 @@ const DotsPage: React.FC = () => {
         resolution: number,
         contrastVal: number,
         brightnessVal: number,
+        gammaVal: number,
         inverted: boolean,
         colors: boolean
     ) => {
@@ -109,7 +112,7 @@ const DotsPage: React.FC = () => {
             if (!context) return;
 
             const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            const processed = processImageForDots(imageData, contrastVal, brightnessVal, inverted, colors);
+            const processed = processImageForDots(imageData, contrastVal, brightnessVal, gammaVal, inverted, colors);
             setPixelData(processed);
         } catch (error) {
             console.error('Error processing image:', error);
@@ -121,8 +124,8 @@ const DotsPage: React.FC = () => {
         setCurrentFile(file);
         setVideoFile(null);
         setIsStreamingVideo(false);
-        processImage(file, specs.resolution, contrast, brightness, isColorInverted, useColors);
-    }, [specs.resolution, contrast, brightness, isColorInverted, useColors, processImage]);
+        processImage(file, specs.resolution, contrast, brightness, gamma, isColorInverted, useColors);
+    }, [specs.resolution, contrast, brightness, gamma, isColorInverted, useColors, processImage]);
 
     // Handle video upload
     const handleVideoUpload = React.useCallback((file: File) => {
@@ -180,7 +183,7 @@ const DotsPage: React.FC = () => {
                 if (context) {
                     context.drawImage(videoElement, 0, 0, width, height);
                     const imageData = context.getImageData(0, 0, width, height);
-                    const processed = processImageForDots(imageData, contrast, brightness, isColorInverted, useColors);
+                    const processed = processImageForDots(imageData, contrast, brightness, gamma, isColorInverted, useColors);
                     setPixelData(processed);
                 }
 
@@ -197,7 +200,7 @@ const DotsPage: React.FC = () => {
                 cancelAnimationFrame(animationFrameRef.current);
             }
         };
-    }, [isStreamingVideo, videoElement, specs.resolution, contrast, brightness, isColorInverted, useColors, frameRate]);
+    }, [isStreamingVideo, videoElement, specs.resolution, contrast, brightness, gamma, isColorInverted, useColors, frameRate]);
 
     // Cleanup video element on unmount
     React.useEffect(() => {
@@ -211,8 +214,8 @@ const DotsPage: React.FC = () => {
 
     // Debounced handlers for expensive operations
     const debouncedProcessImage = React.useMemo(
-        () => debounce((file: File, resolution: number, contrastVal: number, brightnessVal: number, inverted: boolean, colors: boolean) => {
-            processImage(file, resolution, contrastVal, brightnessVal, inverted, colors);
+        () => debounce((file: File, resolution: number, contrastVal: number, brightnessVal: number, gammaVal: number, inverted: boolean, colors: boolean) => {
+            processImage(file, resolution, contrastVal, brightnessVal, gammaVal, inverted, colors);
         }, 50),
         [processImage]
     );
@@ -220,39 +223,46 @@ const DotsPage: React.FC = () => {
     const handleResolutionChange = React.useCallback((resolution: number) => {
         setSpecs(prev => ({ ...prev, resolution }));
         if (currentFile) {
-            debouncedProcessImage(currentFile, resolution, contrast, brightness, isColorInverted, useColors);
+            debouncedProcessImage(currentFile, resolution, contrast, brightness, gamma, isColorInverted, useColors);
         }
-    }, [currentFile, contrast, brightness, isColorInverted, useColors, debouncedProcessImage]);
+    }, [currentFile, contrast, brightness, gamma, isColorInverted, useColors, debouncedProcessImage]);
 
     const handleContrastChange = React.useCallback((newContrast: number) => {
         setContrast(newContrast);
         if (currentFile) {
-            debouncedProcessImage(currentFile, specs.resolution, newContrast, brightness, isColorInverted, useColors);
+            debouncedProcessImage(currentFile, specs.resolution, newContrast, brightness, gamma, isColorInverted, useColors);
         }
-    }, [currentFile, specs.resolution, brightness, isColorInverted, useColors, debouncedProcessImage]);
+    }, [currentFile, specs.resolution, brightness, gamma, isColorInverted, useColors, debouncedProcessImage]);
 
     const handleBrightnessChange = React.useCallback((newBrightness: number) => {
         setBrightness(newBrightness);
         if (currentFile) {
-            debouncedProcessImage(currentFile, specs.resolution, contrast, newBrightness, isColorInverted, useColors);
+            debouncedProcessImage(currentFile, specs.resolution, contrast, newBrightness, gamma, isColorInverted, useColors);
         }
-    }, [currentFile, specs.resolution, contrast, isColorInverted, useColors, debouncedProcessImage]);
+    }, [currentFile, specs.resolution, contrast, gamma, isColorInverted, useColors, debouncedProcessImage]);
+
+    const handleGammaChange = React.useCallback((newGamma: number) => {
+        setGamma(newGamma);
+        if (currentFile) {
+            debouncedProcessImage(currentFile, specs.resolution, contrast, brightness, newGamma, isColorInverted, useColors);
+        }
+    }, [currentFile, specs.resolution, contrast, brightness, isColorInverted, useColors, debouncedProcessImage]);
 
     const handleColorInvertedToggle = React.useCallback(() => {
         const newValue = !isColorInverted;
         setIsColorInverted(newValue);
         if (currentFile) {
-            processImage(currentFile, specs.resolution, contrast, brightness, newValue, useColors);
+            processImage(currentFile, specs.resolution, contrast, brightness, gamma, newValue, useColors);
         }
-    }, [currentFile, specs.resolution, contrast, brightness, isColorInverted, useColors, processImage]);
+    }, [currentFile, specs.resolution, contrast, brightness, gamma, isColorInverted, useColors, processImage]);
 
     const handleUseColorsToggle = React.useCallback(() => {
         const newValue = !useColors;
         setUseColors(newValue);
         if (currentFile) {
-            processImage(currentFile, specs.resolution, contrast, brightness, isColorInverted, newValue);
+            processImage(currentFile, specs.resolution, contrast, brightness, gamma, isColorInverted, newValue);
         }
-    }, [currentFile, specs.resolution, contrast, brightness, isColorInverted, useColors, processImage]);
+    }, [currentFile, specs.resolution, contrast, brightness, gamma, isColorInverted, useColors, processImage]);
 
 
     return (
@@ -268,6 +278,8 @@ const DotsPage: React.FC = () => {
                 onContrastChange={handleContrastChange}
                 brightness={brightness}
                 onBrightnessChange={handleBrightnessChange}
+                gamma={gamma}
+                onGammaChange={handleGammaChange}
                 useColors={useColors}
                 onUseColorsToggle={handleUseColorsToggle}
                 onResolutionChange={handleResolutionChange}

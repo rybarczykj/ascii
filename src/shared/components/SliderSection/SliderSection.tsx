@@ -12,6 +12,9 @@ interface SliderSectionProps {
     onBrightnessChange: (brightness: number) => void;
     /** Whether to show font weight slider (ASCII mode only) */
     showFontWeight?: boolean;
+    /** Gamma (Dots mode). When provided, shows gamma slider. */
+    gamma?: number;
+    onGammaChange?: (gamma: number) => void;
 }
 
 export const SliderSection: React.FC<SliderSectionProps> = ({
@@ -23,6 +26,8 @@ export const SliderSection: React.FC<SliderSectionProps> = ({
     brightness,
     onBrightnessChange,
     showFontWeight = true,
+    gamma,
+    onGammaChange,
 }) => {
     return (
         <>
@@ -60,6 +65,18 @@ export const SliderSection: React.FC<SliderSectionProps> = ({
                 step={1}
                 label={brightness.toString()}
             />
+
+            {gamma !== undefined && onGammaChange && (
+                <Slider
+                    title={'gamma:'}
+                    onChange={onGammaChange}
+                    value={gamma}
+                    min={0.4}
+                    max={2.5}
+                    step={0.1}
+                    label={gamma.toFixed(1)}
+                />
+            )}
 
             <Slider
                 title={'zoom:'}

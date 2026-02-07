@@ -1,10 +1,10 @@
 // Dots-specific utilities
 import { getGreyscale, getColors, getRawColors, resizeImage } from '../../shared/utils';
-import { applyBrightness, applyContrast, calculateLuminance } from '../../shared/utils/color-utils';
+import { applyBrightness, applyContrast, applyGamma, calculateLuminance } from '../../shared/utils/color-utils';
 
 // Re-export shared utilities
 export { getGreyscale, getColors, getRawColors, resizeImage };
-export { applyBrightness, applyContrast, calculateLuminance };
+export { applyBrightness, applyContrast, applyGamma, calculateLuminance };
 
 export interface ProcessedPixelData {
     pixels: { r: number; g: number; b: number }[][];
@@ -16,12 +16,13 @@ export interface ProcessedPixelData {
 
 /**
  * Process image data for dots rendering
- * Returns a 2D array of RGB values with contrast and brightness applied
+ * Returns a 2D array of RGB values with contrast, brightness, and gamma applied
  */
 export const processImageForDots = (
     imageData: ImageData,
     contrast: number,
     brightness: number,
+    gamma: number,
     isColorInverted: boolean,
     useColors: boolean
 ): ProcessedPixelData => {
@@ -48,9 +49,12 @@ export const processImageForDots = (
             let b = origB;
 
             if (useColors) {
-                // Apply adjustments to each channel
+                // Apply adjustments to each channel: brightness → contrast → gamma
                 const luminance = calculateLuminance(r, g, b);
-                const adjustedLuminance = applyContrast(applyBrightness(luminance, brightness), contrast);
+                const adjustedLuminance = applyGamma(
+                    applyContrast(applyBrightness(luminance, brightness), contrast),
+                    gamma
+                );
                 
                 // Scale RGB values by the luminance adjustment factor
                 const factor = luminance > 0 ? adjustedLuminance / luminance : 1;
@@ -64,9 +68,12 @@ export const processImageForDots = (
                     b = 255 - b;
                 }
             } else {
-                // Greyscale mode
+                // Greyscale mode: brightness → contrast → gamma
                 const luminance = calculateLuminance(r, g, b);
-                const adjustedLuminance = applyContrast(applyBrightness(luminance, brightness), contrast);
+                const adjustedLuminance = applyGamma(
+                    applyContrast(applyBrightness(luminance, brightness), contrast),
+                    gamma
+                );
                 const grey = isColorInverted ? 255 - adjustedLuminance : adjustedLuminance;
                 r = g = b = Math.round(grey);
             }

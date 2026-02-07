@@ -23,6 +23,19 @@ export const applyContrast = (luminance: number, contrast: number): number => {
 };
 
 /**
+ * Apply gamma curve to a luminance value (after brightness/contrast).
+ * @param luminance - The input luminance (0-255)
+ * @param gamma - Gamma exponent (e.g. 0.4–2.5). 1 = no change; <1 brightens midtones, >1 darkens midtones.
+ * @returns Adjusted luminance clamped to 0-255
+ */
+export const applyGamma = (luminance: number, gamma: number): number => {
+    if (gamma === 1 || gamma <= 0) return luminance;
+    const x = luminance / 255;
+    const y = Math.pow(x, gamma);
+    return Math.max(0, Math.min(255, Math.round(y * 255)));
+};
+
+/**
  * Calculate perceived luminance from RGB values
  * Uses standard relative luminance formula
  */

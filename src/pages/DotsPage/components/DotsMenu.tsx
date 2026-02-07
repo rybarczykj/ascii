@@ -27,6 +27,8 @@ interface DotsMenuProps {
     onContrastChange: (contrast: number) => void;
     brightness: number;
     onBrightnessChange: (brightness: number) => void;
+    gamma: number;
+    onGammaChange: (gamma: number) => void;
     useColors: boolean;
     onUseColorsToggle: () => void;
     onResolutionChange: (resolution: number) => void;
@@ -60,6 +62,8 @@ export const DotsMenu = ({
     onContrastChange,
     brightness,
     onBrightnessChange,
+    gamma,
+    onGammaChange,
     useColors,
     onUseColorsToggle,
     minDotSize,
@@ -147,6 +151,8 @@ export const DotsMenu = ({
                         onContrastChange={onContrastChange}
                         brightness={brightness}
                         onBrightnessChange={onBrightnessChange}
+                        gamma={gamma}
+                        onGammaChange={onGammaChange}
                         showFontWeight={false}
                     />
 
