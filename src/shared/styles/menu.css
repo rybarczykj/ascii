@@ -86,17 +86,6 @@ input[type='file'] {
   transform: translate(-50%, -50%);
 }
 
-/* Dots canvas positioning (mirrors .ascii) */
-.dots-canvas {
-  position: absolute;
-  top: 50%;
-  left: 60%;
-  min-height: 400px;
-  min-width: 300px;
-  padding: 40px;
-  z-index: -1;
-  transform: translate(-50%, -50%);
-}
 
 .slidecontainer {
   margin-bottom: 20px;
